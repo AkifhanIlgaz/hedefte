@@ -25,12 +25,6 @@ func ConnectMongo(config config.MongoConfig) (*mongo.Client, error) {
 		return nil, fmt.Errorf("connect to mongo db: %w", err)
 	}
 
-	defer func() {
-		if err = client.Disconnect(context.TODO()); err != nil {
-			fmt.Errorf("disconnect to mongo db: %w", err)
-		}
-	}()
-
 	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
 		return nil, fmt.Errorf("ping mongo db: %w", err)
 	}
