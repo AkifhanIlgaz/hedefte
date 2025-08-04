@@ -1,12 +1,12 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/AkifhanIlgaz/hedefte/internal/config"
 	"github.com/AkifhanIlgaz/hedefte/pkg/db"
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -19,19 +19,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		if err = mongoClient.Disconnect(context.TODO()); err != nil {
+			fmt.Errorf("disconnect to mongo db: %w", err)
+		}
+	}()
 
-	_ = mongoClient
-
-	server := gin.Default()
-
-	server.GET("/health", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-
-	err = server.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
 }
