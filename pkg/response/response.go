@@ -1,7 +1,10 @@
 package response
 
 import (
+	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type APIResponse struct {
@@ -27,7 +30,7 @@ type APIError struct {
 	ValidationErrors map[string]string `json:"validation_errors,omitempty"`
 }
 
-func Success(message string, opts ...Option) APIResponse {
+func Success(ctx *gin.Context, message string, opts ...Option) {
 	res := APIResponse{
 		Success:   true,
 		Message:   message,
@@ -38,10 +41,10 @@ func Success(message string, opts ...Option) APIResponse {
 		opt(&res)
 	}
 
-	return res
+	ctx.JSON(http.StatusOK, res)
 }
 
-func Error(code int, message string, opts ...Option) APIResponse {
+func Error(ctx *gin.Context, code int, message string, opts ...Option) {
 	res := APIResponse{
 		Success:   false,
 		Message:   message,
@@ -56,5 +59,5 @@ func Error(code int, message string, opts ...Option) APIResponse {
 		opt(&res)
 	}
 
-	return res
+	ctx.JSON(code, res)
 }
