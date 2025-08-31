@@ -67,7 +67,7 @@ func (h AnalysisHandler) All(ctx *gin.Context) {
 	uid := ctx.GetString("uid")
 	exam := ctx.Query("exam")
 
-	all, err := h.analysisService.Get(uid, exam)
+	all, err := h.analysisService.GetAllExams(uid, models.ExamType(exam))
 	if err != nil {
 		// TODO: Improve error handling
 		response.Error(ctx, http.StatusInternalServerError, err.Error())

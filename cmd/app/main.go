@@ -20,14 +20,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mongoClient, err := db.ConnectMongo(cfg.Mongo)
+	postgres, err := db.ConnectPostgres(cfg.Postgres)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
-	analysisService := services.NewAnalysisService(mongoClient.Database(`hedefte`))
+	analysisService := services.NewAnalysisService(postgres)
 	analysisHandler := handlers.NewAnalysisHandler(analysisService, *authMiddleware)
 
 	server := gin.Default()

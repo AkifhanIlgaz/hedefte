@@ -10,8 +10,13 @@ type MongoConfig struct {
 	ConnString string `mapstructure:"connection_string"`
 }
 
+type PostgresConfig struct {
+	ConnString string `mapstructure:"connection_string"`
+}
+
 type AppConfig struct {
-	Mongo MongoConfig `mapstructure:"mongo"`
+	Mongo    MongoConfig    `mapstructure:"mongo"`
+	Postgres PostgresConfig `mapstructure:"postgres"`
 }
 
 func Load() (AppConfig, error) {
