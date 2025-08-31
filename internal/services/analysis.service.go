@@ -16,7 +16,7 @@ const (
 )
 
 type AnalysisService struct {
-	db *mongo.Database
+	db *gorm
 }
 
 func NewAnalysisService(db *mongo.Database) AnalysisService {
