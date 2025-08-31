@@ -30,6 +30,14 @@ func ConnectPostgres(config config.PostgresConfig) (*gorm.DB, error) {
 		log.Fatal("Veritabanı seed işlemi başarısız:", err)
 	}
 
+	if err := SeedAYTSubjects(db); err != nil {
+		log.Fatal("Veritabanı seed işlemi başarısız:", err)
+	}
+
+	if err := SeedAYTTopics(db); err != nil {
+		log.Fatal("Veritabanı seed işlemi başarısız:", err)
+	}
+
 	return db, nil
 }
 

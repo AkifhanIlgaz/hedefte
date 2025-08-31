@@ -10,3 +10,5 @@ type ExamSubject = analysis.ExamSubject
 type Topic = analysis.Topic
 type TopicMistake = analysis.TopicMistake
 type ExamType = analysis.ExamType
+
+type SubjectResponse = analysis.SubjectResponse

@@ -10,3 +10,10 @@ type Subject struct {
 	Topics       []Topic       `json:"topics" gorm:"foreignKey:SubjectID;constraint:OnDelete:CASCADE"`
 	ExamSubjects []ExamSubject `json:"exam_subjects" gorm:"foreignKey:SubjectID;constraint:OnDelete:CASCADE"`
 }
+
+type SubjectResponse struct {
+	ID             uint     `json:"id"`
+	Name           string   `json:"name"`
+	TotalQuestions int      `json:"total_questions"`
+	ExamType       ExamType `json:"exam_type"`
+}
