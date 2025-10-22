@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/AkifhanIlgaz/hedefte/internal/config"
 	"github.com/AkifhanIlgaz/hedefte/internal/handlers"
@@ -12,6 +13,8 @@ import (
 	"github.com/AkifhanIlgaz/hedefte/pkg/token"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 func main() {
@@ -20,15 +23,34 @@ func main() {
 		log.Fatal(err)
 	}
 
-	postgres, err := db.ConnectPostgres(cfg.Postgres)
+	mongoDb, err := db.ConnectMongo(cfg.Mongo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	encoderCfg := zapcore.EncoderConfig{
+		TimeKey:        "T",
+		LevelKey:       "L",
+		NameKey:        "N",
+		CallerKey:      "C",
+		MessageKey:     "M",
+		StacktraceKey:  "S",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.CapitalColorLevelEncoder,        // 🎨 renkli seviye
+		EncodeTime:     zapcore.TimeEncoderOfLayout("15:04:05"), // sade saat
+		EncodeDuration: zapcore.StringDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
+	}
+	consoleEncoder := zapcore.NewConsoleEncoder(encoderCfg)
+	core := zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stdout), zap.DebugLevel)
+
+	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
+	defer logger.Sync()
+
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
-	analysisService := services.NewAnalysisService(postgres)
-	analysisHandler := handlers.NewAnalysisHandler(analysisService, *authMiddleware)
+	tytAnalysisService := services.NewTYTAnalysisService(mongoDb)
+	tytAnalysisHandler := handlers.NewTYTAnalysisHandler(tytAnalysisService, *authMiddleware)
 
 	server := gin.Default()
 
@@ -48,7 +70,7 @@ func main() {
 		})
 	})
 
-	analysisHandler.RegisterRoutes(api)
+	tytAnalysisHandler.RegisterRoutes(api)
 
 	err = server.Run()
 	if err != nil {

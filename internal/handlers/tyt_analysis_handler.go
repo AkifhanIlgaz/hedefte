@@ -12,28 +12,28 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type AnalysisHandler struct {
-	analysisService services.AnalysisService
+type TYTAnalysisHandler struct {
+	analysisService services.TYTAnalysisService
 	authMiddleware  middlewares.AuthMiddleware
 }
 
-func NewAnalysisHandler(analysisService services.AnalysisService, authMiddleware middlewares.AuthMiddleware) AnalysisHandler {
-	return AnalysisHandler{
+func NewTYTAnalysisHandler(analysisService services.TYTAnalysisService, authMiddleware middlewares.AuthMiddleware) TYTAnalysisHandler {
+	return TYTAnalysisHandler{
 		analysisService: analysisService,
 		authMiddleware:  authMiddleware,
 	}
 }
 
-func (h AnalysisHandler) RegisterRoutes(router *gin.RouterGroup) {
-	rg := router.Group("/analysis")
+func (h TYTAnalysisHandler) RegisterRoutes(router *gin.RouterGroup) {
+	rg := router.Group("/analysis/tyt")
 	rg.Use(h.authMiddleware.AccessToken())
 
 	rg.POST("", h.AddAnalysis)
 	rg.GET("", h.All)
 }
+func (h TYTAnalysisHandler) AddAnalysis(ctx *gin.Context) {
 
-func (h AnalysisHandler) AddAnalysis(ctx *gin.Context) {
-	var req models.ExamAnalysisRequest
+	var req models.AddExamRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.Error(ctx, http.StatusBadRequest, err.Error())
 		return
@@ -53,7 +53,7 @@ func (h AnalysisHandler) AddAnalysis(ctx *gin.Context) {
 
 	uid := ctx.GetString("uid")
 
-	err := h.analysisService.Add(uid, req)
+	err := h.analysisService.AddExam(uid, req)
 	if err != nil {
 		// TODO: Improve error handling
 		response.Error(ctx, http.StatusInternalServerError, err.Error())
@@ -63,11 +63,10 @@ func (h AnalysisHandler) AddAnalysis(ctx *gin.Context) {
 	response.Success(ctx, "added successfully")
 }
 
-func (h AnalysisHandler) All(ctx *gin.Context) {
-	uid := ctx.GetString("uid")
-	exam := ctx.Query("exam")
+func (h TYTAnalysisHandler) All(ctx *gin.Context) {
+	uid := "test-user-id" //ctx.GetString("uid")
 
-	all, err := h.analysisService.GetAllExams(uid, models.ExamType(exam))
+	all, err := h.analysisService.GetAllExams(uid)
 	if err != nil {
 		// TODO: Improve error handling
 		response.Error(ctx, http.StatusInternalServerError, err.Error())

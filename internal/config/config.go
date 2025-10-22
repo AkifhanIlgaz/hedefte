@@ -8,6 +8,7 @@ import (
 
 type MongoConfig struct {
 	ConnString string `mapstructure:"connection_string"`
+	Database   string `mapstructure:"database"`
 }
 
 type PostgresConfig struct {

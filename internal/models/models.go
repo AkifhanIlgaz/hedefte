@@ -5,10 +5,7 @@ import (
 )
 
 type Exam = analysis.Exam
-type Subject = analysis.Subject
-type ExamSubject = analysis.ExamSubject
+type Lesson = analysis.Lesson
+type LessonAnalysis = analysis.LessonAnalysis
 type Topic = analysis.Topic
-type TopicMistake = analysis.TopicMistake
-type ExamType = analysis.ExamType
-
-type SubjectResponse = analysis.SubjectResponse
+type TopicAnalysis = analysis.TopicAnalysis

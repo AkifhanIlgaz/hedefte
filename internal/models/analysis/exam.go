@@ -1,15 +1,31 @@
 package analysis
 
-import "time"
+import (
+	"time"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
+)
 
 type Exam struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	UID       string    `json:"uid" gorm:"not null"`
-	CreatedAt time.Time `json:"created_at"`
-	ExamType  ExamType  `json:"exam_type"`
-	Name      string    `json:"name" gorm:"type:text;not null"`
-	TotalNet  float64   `json:"total_net" gorm:"type:decimal(5,2)"`
+	ID             bson.ObjectID    `bson:"_id,omitempty"`
+	UserId         string           `bson:"userId"`
+	Name           string           `bson:"name"`
+	Date           time.Time        `bson:"date"`
+	TotalNet       float64          `bson:"totalNet"`
+	LessonAnalysis []LessonAnalysis `bson:"lessonAnalysis"`
+}
 
-	// Relations
-	ExamSubjects []ExamSubject `json:"exam_subjects" gorm:"foreignKey:ExamID;constraint:OnDelete:CASCADE"`
+type LessonAnalysis struct {
+	LessonName    string          `bson:"lessonName"`
+	Correct       int             `bson:"correct"`
+	Wrong         int             `bson:"wrong"`
+	Empty         int             `bson:"empty"`
+	Net           float64         `bson:"net"`
+	Time          int             `bson:"time"` // in minutes
+	TopicAnalysis []TopicAnalysis `bson:"topicAnalysis"`
+}
+
+type TopicAnalysis struct {
+	TopicName string `bson:"topicName"`
+	Mistakes  int    `bson:"mistakes"`
 }
