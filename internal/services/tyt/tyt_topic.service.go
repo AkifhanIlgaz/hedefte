@@ -1,4 +1,4 @@
-package services
+package tyt
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type TYTTopicService struct {
+type TopicService struct {
 	topicsCollection *mongo.Collection
 }
 
-func NewTYTTopicService(db *mongo.Database) *TYTTopicService {
-	return &TYTTopicService{topicsCollection: db.Collection("tyt_topics")}
+func NewTopicService(db *mongo.Database) TopicService {
+	return TopicService{topicsCollection: db.Collection("tyt_topics")}
 }
 
-func (service TYTTopicService) GetAll() ([]models.Topic, error) {
+func (service TopicService) GetAll() ([]models.Topic, error) {
 	var topics []models.Topic
 	cursor, err := service.topicsCollection.Find(context.Background(), bson.M{})
 	if err != nil {

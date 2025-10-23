@@ -1,4 +1,4 @@
-package services
+package tyt
 
 import (
 	"context"
@@ -8,21 +8,21 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type TYTAnalysisService struct {
+type AnalysisService struct {
 	analysisCollection *mongo.Collection
 	lessonsCollection  *mongo.Collection
 	topicsCollection   *mongo.Collection
 }
 
-func NewTYTAnalysisService(db *mongo.Database) TYTAnalysisService {
-	return TYTAnalysisService{
+func NewAnalysisService(db *mongo.Database) AnalysisService {
+	return AnalysisService{
 		analysisCollection: db.Collection("tyt_analysis"),
 		lessonsCollection:  db.Collection("tyt_lessons"),
 		topicsCollection:   db.Collection("tyt_topics"),
 	}
 }
 
-func (service TYTAnalysisService) AddExam(userId string, req models.AddExamRequest) error {
+func (service AnalysisService) AddExam(userId string, req models.AddExamRequest) error {
 	ctx := context.Background()
 
 	lessonAnalyses := make([]models.LessonAnalysis, len(req.LessonAnalysis))
@@ -78,7 +78,7 @@ func (service TYTAnalysisService) AddExam(userId string, req models.AddExamReque
 	return nil
 }
 
-func (service TYTAnalysisService) GetAllExams(userId string) ([]models.Exam, error) {
+func (service AnalysisService) GetAllExams(userId string) ([]models.Exam, error) {
 	ctx := context.Background()
 
 	cursor, err := service.analysisCollection.Find(ctx, bson.M{})

@@ -18,6 +18,4 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db.SeedData(mongoDb)
-
 }

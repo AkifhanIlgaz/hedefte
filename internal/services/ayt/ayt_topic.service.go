@@ -1,4 +1,4 @@
-package services
+package ayt
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type AYTTopicService struct {
+type TopicService struct {
 	topicsCollection *mongo.Collection
 }
 
-func NewAYTTopicService(db *mongo.Database) *AYTTopicService {
-	return &AYTTopicService{topicsCollection: db.Collection("ayt_topics")}
+func NewTopicService(db *mongo.Database) TopicService {
+	return TopicService{topicsCollection: db.Collection("ayt_topics")}
 }
 
-func (service AYTTopicService) GetAll() ([]models.Topic, error) {
+func (service TopicService) GetAll() ([]models.Topic, error) {
 	var topics []models.Topic
 	cursor, err := service.topicsCollection.Find(context.Background(), bson.M{})
 	if err != nil {

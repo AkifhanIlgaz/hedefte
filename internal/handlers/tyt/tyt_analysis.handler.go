@@ -1,4 +1,4 @@
-package handlers
+package tyt
 
 import (
 	"errors"
@@ -12,26 +12,26 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-type TYTAnalysisHandler struct {
+type AnalysisHandler struct {
 	analysisService services.TYTAnalysisService
 	authMiddleware  middlewares.AuthMiddleware
 }
 
-func NewTYTAnalysisHandler(analysisService services.TYTAnalysisService, authMiddleware middlewares.AuthMiddleware) TYTAnalysisHandler {
-	return TYTAnalysisHandler{
+func NewAnalysisHandler(analysisService services.TYTAnalysisService, authMiddleware middlewares.AuthMiddleware) AnalysisHandler {
+	return AnalysisHandler{
 		analysisService: analysisService,
 		authMiddleware:  authMiddleware,
 	}
 }
 
-func (h TYTAnalysisHandler) RegisterRoutes(router *gin.RouterGroup) {
+func (h AnalysisHandler) RegisterRoutes(router *gin.RouterGroup) {
 	rg := router.Group("/analysis/tyt")
 	rg.Use(h.authMiddleware.AccessToken())
 
 	rg.POST("", h.AddAnalysis)
 	rg.GET("", h.All)
 }
-func (h TYTAnalysisHandler) AddAnalysis(ctx *gin.Context) {
+func (h AnalysisHandler) AddAnalysis(ctx *gin.Context) {
 
 	var req models.AddExamRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -63,7 +63,7 @@ func (h TYTAnalysisHandler) AddAnalysis(ctx *gin.Context) {
 	response.Success(ctx, "added successfully")
 }
 
-func (h TYTAnalysisHandler) All(ctx *gin.Context) {
+func (h AnalysisHandler) All(ctx *gin.Context) {
 	uid := "test-user-id" //ctx.GetString("uid")
 
 	all, err := h.analysisService.GetAllExams(uid)

@@ -8,6 +8,7 @@ import (
 	"github.com/AkifhanIlgaz/hedefte/internal/config"
 	"github.com/AkifhanIlgaz/hedefte/internal/handlers"
 	"github.com/AkifhanIlgaz/hedefte/internal/middlewares"
+	"github.com/AkifhanIlgaz/hedefte/internal/routers"
 	"github.com/AkifhanIlgaz/hedefte/internal/services"
 	"github.com/AkifhanIlgaz/hedefte/pkg/db"
 	"github.com/AkifhanIlgaz/hedefte/pkg/token"
@@ -49,8 +50,25 @@ func main() {
 
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
+
 	tytAnalysisService := services.NewTYTAnalysisService(mongoDb)
+	tytLessonService := services.NewTYTLessonService(mongoDb)
+	tytTopicService := services.NewTYTTopicService(mongoDb)
+
+	aytAnalysisService := services.NewAYTAnalysisService(mongoDb)
+	aytLessonService := services.NewAYTLessonService(mongoDb)
+	aytTopicService := services.NewAYTTopicService(mongoDb)
+
 	tytAnalysisHandler := handlers.NewTYTAnalysisHandler(tytAnalysisService, *authMiddleware)
+	tytLessonHandler := handlers.NewTYTLessonHandler(tytLessonService)
+	tytTopicHandler := handlers.NewTYTTopicHandler(tytTopicService)
+
+	aytAnalysisHandler := handlers.NewAYTAnalysisHandler(aytAnalysisService, *authMiddleware)
+	aytLessonHandler := handlers.NewAYTLessonHandler(aytLessonService)
+	aytTopicHandler := handlers.NewAYTTopicHandler(aytTopicService)
+
+	tytRouter := routers.NewTYTRouter(tytAnalysisHandler, *tytLessonHandler, *tytTopicHandler, *authMiddleware)
+	aytRouter := routers.NewAYTRouter(aytAnalysisHandler, *aytLessonHandler, *aytTopicHandler, *authMiddleware)
 
 	server := gin.Default()
 
@@ -70,7 +88,8 @@ func main() {
 		})
 	})
 
-	tytAnalysisHandler.RegisterRoutes(api)
+	tytRouter.RegisterRoutes(api)
+	aytRouter.RegisterRoutes(api)
 
 	err = server.Run()
 	if err != nil {

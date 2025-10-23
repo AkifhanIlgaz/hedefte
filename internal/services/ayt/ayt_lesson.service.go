@@ -1,4 +1,4 @@
-package services
+package ayt
 
 import (
 	"context"
@@ -8,20 +8,20 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type TYTLessonService struct {
+type LessonService struct {
 	ctx              context.Context
 	lessonCollection *mongo.Collection
 }
 
-func NewTYTLessonService(db *mongo.Database) TYTLessonService {
+func NewLessonService(db *mongo.Database) LessonService {
 	ctx := context.Background()
-	return TYTLessonService{
+	return LessonService{
 		ctx:              ctx,
-		lessonCollection: db.Collection("tyt_lessons"),
+		lessonCollection: db.Collection("ayt_lessons"),
 	}
 }
 
-func (service TYTLessonService) GetAll() ([]models.Lesson, error) {
+func (service LessonService) GetAll() ([]models.Lesson, error) {
 	var lessons []models.Lesson
 	cursor, err := service.lessonCollection.Find(service.ctx, bson.M{})
 	if err != nil {
