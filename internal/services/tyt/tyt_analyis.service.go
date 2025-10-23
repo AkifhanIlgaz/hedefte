@@ -6,19 +6,22 @@ import (
 	"github.com/AkifhanIlgaz/hedefte/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.uber.org/zap"
 )
 
 type AnalysisService struct {
 	analysisCollection *mongo.Collection
 	lessonsCollection  *mongo.Collection
 	topicsCollection   *mongo.Collection
+	logger             *zap.Logger
 }
 
-func NewAnalysisService(db *mongo.Database) AnalysisService {
+func NewAnalysisService(db *mongo.Database, logger *zap.Logger) AnalysisService {
 	return AnalysisService{
 		analysisCollection: db.Collection("tyt_analysis"),
 		lessonsCollection:  db.Collection("tyt_lessons"),
 		topicsCollection:   db.Collection("tyt_topics"),
+		logger:             logger,
 	}
 }
 

@@ -10,17 +10,20 @@ import (
 	"github.com/AkifhanIlgaz/hedefte/pkg/response"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 type AnalysisHandler struct {
 	analysisService services.TYTAnalysisService
 	authMiddleware  middlewares.AuthMiddleware
+	logger          *zap.Logger
 }
 
-func NewAnalysisHandler(analysisService services.TYTAnalysisService, authMiddleware middlewares.AuthMiddleware) AnalysisHandler {
+func NewAnalysisHandler(analysisService services.TYTAnalysisService, authMiddleware middlewares.AuthMiddleware, logger *zap.Logger) AnalysisHandler {
 	return AnalysisHandler{
 		analysisService: analysisService,
 		authMiddleware:  authMiddleware,
+		logger:          logger,
 	}
 }
 

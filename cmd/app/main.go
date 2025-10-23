@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/AkifhanIlgaz/hedefte/internal/config"
 	"github.com/AkifhanIlgaz/hedefte/internal/handlers"
@@ -11,11 +10,10 @@ import (
 	"github.com/AkifhanIlgaz/hedefte/internal/routers"
 	"github.com/AkifhanIlgaz/hedefte/internal/services"
 	"github.com/AkifhanIlgaz/hedefte/pkg/db"
+	"github.com/AkifhanIlgaz/hedefte/pkg/logger"
 	"github.com/AkifhanIlgaz/hedefte/pkg/token"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
 func main() {
@@ -29,43 +27,27 @@ func main() {
 		log.Fatal(err)
 	}
 
-	encoderCfg := zapcore.EncoderConfig{
-		TimeKey:        "T",
-		LevelKey:       "L",
-		NameKey:        "N",
-		CallerKey:      "C",
-		MessageKey:     "M",
-		StacktraceKey:  "S",
-		LineEnding:     zapcore.DefaultLineEnding,
-		EncodeLevel:    zapcore.CapitalColorLevelEncoder,        // 🎨 renkli seviye
-		EncodeTime:     zapcore.TimeEncoderOfLayout("15:04:05"), // sade saat
-		EncodeDuration: zapcore.StringDurationEncoder,
-		EncodeCaller:   zapcore.ShortCallerEncoder,
-	}
-	consoleEncoder := zapcore.NewConsoleEncoder(encoderCfg)
-	core := zapcore.NewCore(consoleEncoder, zapcore.Lock(os.Stdout), zap.DebugLevel)
-
-	logger := zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.ErrorLevel))
+	logger := logger.NewLogger()
 	defer logger.Sync()
 
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
-	tytAnalysisService := services.NewTYTAnalysisService(mongoDb)
-	tytLessonService := services.NewTYTLessonService(mongoDb)
-	tytTopicService := services.NewTYTTopicService(mongoDb)
+	tytAnalysisService := services.NewTYTAnalysisService(mongoDb, logger)
+	tytLessonService := services.NewTYTLessonService(mongoDb, logger)
+	tytTopicService := services.NewTYTTopicService(mongoDb, logger)
 
-	aytAnalysisService := services.NewAYTAnalysisService(mongoDb)
-	aytLessonService := services.NewAYTLessonService(mongoDb)
-	aytTopicService := services.NewAYTTopicService(mongoDb)
+	aytAnalysisService := services.NewAYTAnalysisService(mongoDb, logger)
+	aytLessonService := services.NewAYTLessonService(mongoDb, logger)
+	aytTopicService := services.NewAYTTopicService(mongoDb, logger)
 
-	tytAnalysisHandler := handlers.NewTYTAnalysisHandler(tytAnalysisService, *authMiddleware)
-	tytLessonHandler := handlers.NewTYTLessonHandler(tytLessonService)
-	tytTopicHandler := handlers.NewTYTTopicHandler(tytTopicService)
+	tytAnalysisHandler := handlers.NewTYTAnalysisHandler(tytAnalysisService, *authMiddleware, logger)
+	tytLessonHandler := handlers.NewTYTLessonHandler(tytLessonService, logger)
+	tytTopicHandler := handlers.NewTYTTopicHandler(tytTopicService, logger)
 
-	aytAnalysisHandler := handlers.NewAYTAnalysisHandler(aytAnalysisService, *authMiddleware)
-	aytLessonHandler := handlers.NewAYTLessonHandler(aytLessonService)
-	aytTopicHandler := handlers.NewAYTTopicHandler(aytTopicService)
+	aytAnalysisHandler := handlers.NewAYTAnalysisHandler(aytAnalysisService, *authMiddleware, logger)
+	aytLessonHandler := handlers.NewAYTLessonHandler(aytLessonService, logger)
+	aytTopicHandler := handlers.NewAYTTopicHandler(aytTopicService, logger)
 
 	tytRouter := routers.NewTYTRouter(tytAnalysisHandler, *tytLessonHandler, *tytTopicHandler, *authMiddleware)
 	aytRouter := routers.NewAYTRouter(aytAnalysisHandler, *aytLessonHandler, *aytTopicHandler, *authMiddleware)
