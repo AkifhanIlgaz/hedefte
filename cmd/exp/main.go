@@ -13,15 +13,11 @@ func main() {
 		log.Fatal(err)
 	}
 
-	mongo, err := db.ConnectMongo(cfg.Mongo)
+	mongoDb, err := db.ConnectMongo(cfg.Mongo)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	mongoDb := mongo.Database(cfg.Mongo.Database)
+	db.SeedData(mongoDb)
 
-	err = db.SeedData(mongoDb)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
