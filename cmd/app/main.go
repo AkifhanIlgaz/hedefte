@@ -41,6 +41,8 @@ func main() {
 	aytLessonService := services.NewAYTLessonService(mongoDb, logger)
 	aytTopicService := services.NewAYTTopicService(mongoDb, logger)
 
+	studyMaterialService := services.NewStudyMaterialService(mongoDb, logger)
+
 	tytAnalysisHandler := handlers.NewTYTAnalysisHandler(tytAnalysisService, *authMiddleware, logger)
 	tytLessonHandler := handlers.NewTYTLessonHandler(tytLessonService, logger)
 	tytTopicHandler := handlers.NewTYTTopicHandler(tytTopicService, logger)
@@ -49,8 +51,12 @@ func main() {
 	aytLessonHandler := handlers.NewAYTLessonHandler(aytLessonService, logger)
 	aytTopicHandler := handlers.NewAYTTopicHandler(aytTopicService, logger)
 
+	studyMaterialHandler := handlers.NewStudyMaterialHandler(studyMaterialService, logger)
+
 	tytRouter := routers.NewTYTRouter(tytAnalysisHandler, *tytLessonHandler, *tytTopicHandler, *authMiddleware)
 	aytRouter := routers.NewAYTRouter(aytAnalysisHandler, *aytLessonHandler, *aytTopicHandler, *authMiddleware)
+
+	studyMaterialRouter := routers.NewStudyMaterialRouter(*studyMaterialHandler, *authMiddleware)
 
 	server := gin.Default()
 
@@ -72,6 +78,7 @@ func main() {
 
 	tytRouter.RegisterRoutes(api)
 	aytRouter.RegisterRoutes(api)
+	studyMaterialRouter.RegisterRoutes(api)
 
 	err = server.Run()
 	if err != nil {

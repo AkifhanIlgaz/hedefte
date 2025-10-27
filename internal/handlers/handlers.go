@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/AkifhanIlgaz/hedefte/internal/handlers/ayt"
+	"github.com/AkifhanIlgaz/hedefte/internal/handlers/study_material"
 	"github.com/AkifhanIlgaz/hedefte/internal/handlers/tyt"
 )
 
@@ -21,4 +22,10 @@ var (
 	NewAYTAnalysisHandler = ayt.NewAnalysisHandler
 	NewAYTLessonHandler   = ayt.NewLessonHandler
 	NewAYTTopicHandler    = ayt.NewTopicHandler
+)
+
+type StudyMaterialHandler = study_material.StudyMaterialHandler
+
+var (
+	NewStudyMaterialHandler = study_material.NewStudyMaterialHandler
 )

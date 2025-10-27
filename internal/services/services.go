@@ -2,6 +2,7 @@ package services
 
 import (
 	"github.com/AkifhanIlgaz/hedefte/internal/services/ayt"
+	"github.com/AkifhanIlgaz/hedefte/internal/services/study_material"
 	"github.com/AkifhanIlgaz/hedefte/internal/services/tyt"
 )
 
@@ -21,4 +22,10 @@ var (
 	NewAYTAnalysisService = ayt.NewAnalysisService
 	NewAYTLessonService   = ayt.NewLessonService
 	NewAYTTopicService    = ayt.NewTopicService
+)
+
+type StudyMaterialService = study_material.StudyMaterialService
+
+var (
+	NewStudyMaterialService = study_material.NewStudyMaterialService
 )
