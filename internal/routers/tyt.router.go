@@ -35,4 +35,6 @@ func (r *TYTRouter) RegisterRoutes(router *gin.RouterGroup) {
 
 	rg.GET("/topics", r.tytTopicHandler.GetAll)
 
+	rg.POST("/analysis", r.tytAnalysisHandler.AddAnalysis)
+	rg.GET("/analysis", r.tytAnalysisHandler.All)
 }

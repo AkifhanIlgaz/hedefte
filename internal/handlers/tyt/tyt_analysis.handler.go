@@ -27,13 +27,6 @@ func NewAnalysisHandler(analysisService services.TYTAnalysisService, authMiddlew
 	}
 }
 
-func (h AnalysisHandler) RegisterRoutes(router *gin.RouterGroup) {
-	rg := router.Group("/analysis/tyt")
-	rg.Use(h.authMiddleware.AccessToken())
-
-	rg.POST("", h.AddAnalysis)
-	rg.GET("", h.All)
-}
 func (h AnalysisHandler) AddAnalysis(ctx *gin.Context) {
 
 	var req models.AddExamRequest
