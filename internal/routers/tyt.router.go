@@ -8,21 +8,15 @@ import (
 
 type TYTRouter struct {
 	tytAnalysisHandler handlers.TYTAnalysisHandler
-	tytLessonHandler   handlers.TYTLessonHandler
-	tytTopicHandler    handlers.TYTTopicHandler
 	authMiddleware     middlewares.AuthMiddleware
 }
 
 func NewTYTRouter(
 	TYTAnalysisHandler handlers.TYTAnalysisHandler,
-	TYTLessonHandler handlers.TYTLessonHandler,
-	TYTTopicHandler handlers.TYTTopicHandler,
 	authMiddleware middlewares.AuthMiddleware,
 ) TYTRouter {
 	return TYTRouter{
 		tytAnalysisHandler: TYTAnalysisHandler,
-		tytLessonHandler:   TYTLessonHandler,
-		tytTopicHandler:    TYTTopicHandler,
 		authMiddleware:     authMiddleware,
 	}
 }
@@ -30,10 +24,6 @@ func NewTYTRouter(
 func (r *TYTRouter) RegisterRoutes(router *gin.RouterGroup) {
 	rg := router.Group("/tyt")
 	rg.Use(r.authMiddleware.AccessToken())
-
-	rg.GET("/lessons", r.tytLessonHandler.GetAll)
-
-	rg.GET("/topics", r.tytTopicHandler.GetAll)
 
 	rg.POST("/analysis", r.tytAnalysisHandler.AddAnalysis)
 	rg.GET("/analysis", r.tytAnalysisHandler.All)

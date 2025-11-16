@@ -20,7 +20,7 @@ type LessonAnalysis struct {
 	Correct       int             `bson:"correct" json:"correct"`
 	Wrong         int             `bson:"wrong" json:"wrong"`
 	Empty         int             `bson:"empty" json:"empty"`
-	Net           float64         `bson:"net" json:"net"`
+	TotalNet      float64         `bson:"totalNet" json:"totalNet"`
 	Time          int             `bson:"time" json:"time"` // in minutes
 	TopicAnalysis []TopicAnalysis `bson:"topicAnalysis" json:"topicAnalysis"`
 }

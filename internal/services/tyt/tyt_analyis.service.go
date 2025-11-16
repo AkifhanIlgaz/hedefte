@@ -57,7 +57,7 @@ func (service AnalysisService) AddExam(userId string, req models.AddExamRequest)
 			Correct:       lessonAnalysis.Correct,
 			Wrong:         lessonAnalysis.Wrong,
 			Empty:         lessonAnalysis.Empty,
-			Net:           lessonAnalysis.TotalNet,
+			TotalNet:      lessonAnalysis.TotalNet,
 			Time:          lessonAnalysis.Time,
 			TopicAnalysis: topicAnalyses,
 		}

@@ -34,29 +34,15 @@ func main() {
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
 	tytAnalysisService := services.NewTYTAnalysisService(mongoDb, logger)
-	tytLessonService := services.NewTYTLessonService(mongoDb, logger)
-	tytTopicService := services.NewTYTTopicService(mongoDb, logger)
 
 	aytAnalysisService := services.NewAYTAnalysisService(mongoDb, logger)
-	aytLessonService := services.NewAYTLessonService(mongoDb, logger)
-	aytTopicService := services.NewAYTTopicService(mongoDb, logger)
-
-	studyMaterialService := services.NewStudyMaterialService(mongoDb, logger)
 
 	tytAnalysisHandler := handlers.NewTYTAnalysisHandler(tytAnalysisService, *authMiddleware, logger)
-	tytLessonHandler := handlers.NewTYTLessonHandler(tytLessonService, logger)
-	tytTopicHandler := handlers.NewTYTTopicHandler(tytTopicService, logger)
 
 	aytAnalysisHandler := handlers.NewAYTAnalysisHandler(aytAnalysisService, *authMiddleware, logger)
-	aytLessonHandler := handlers.NewAYTLessonHandler(aytLessonService, logger)
-	aytTopicHandler := handlers.NewAYTTopicHandler(aytTopicService, logger)
 
-	studyMaterialHandler := handlers.NewStudyMaterialHandler(studyMaterialService, logger)
-
-	tytRouter := routers.NewTYTRouter(tytAnalysisHandler, *tytLessonHandler, *tytTopicHandler, *authMiddleware)
-	aytRouter := routers.NewAYTRouter(aytAnalysisHandler, *aytLessonHandler, *aytTopicHandler, *authMiddleware)
-
-	studyMaterialRouter := routers.NewStudyMaterialRouter(*studyMaterialHandler, *authMiddleware)
+	tytRouter := routers.NewTYTRouter(tytAnalysisHandler, *authMiddleware)
+	aytRouter := routers.NewAYTRouter(aytAnalysisHandler, *authMiddleware)
 
 	server := gin.Default()
 
@@ -78,7 +64,6 @@ func main() {
 
 	tytRouter.RegisterRoutes(api)
 	aytRouter.RegisterRoutes(api)
-	studyMaterialRouter.RegisterRoutes(api)
 
 	err = server.Run()
 	if err != nil {

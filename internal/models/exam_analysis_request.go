@@ -9,7 +9,7 @@ import (
 type AddExamRequest struct {
 	Date           time.Time               `json:"date" validate:"required"`
 	Name           string                  `json:"name" validate:"required,min=1,max=100"`
-	TotalNet       float64                 `json:"totalNet" validate:"min=1"`
+	TotalNet       float64                 `json:"totalNet" validate:"min=0"`
 	LessonAnalysis []LessonAnalysisRequest `json:"lessonAnalysis" validate:"required,min=1,dive"`
 }
 
@@ -18,7 +18,7 @@ type LessonAnalysisRequest struct {
 	Correct       int                    `json:"correct" validate:"min=0"`
 	Wrong         int                    `json:"wrong" validate:"min=0"`
 	Empty         int                    `json:"empty" validate:"min=0"`
-	TotalNet      float64                `json:"totalNet" validate:"min=1"`
+	TotalNet      float64                `json:"totalNet" validate:"min=0"`
 	Time          int                    `json:"time" validate:"min=0"` // in minutes
 	TopicAnalysis []TopicAnalysisRequest `json:"topicAnalysis" validate:"dive"`
 }
