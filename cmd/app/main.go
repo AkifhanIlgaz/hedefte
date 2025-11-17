@@ -33,16 +33,11 @@ func main() {
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
-	tytAnalysisService := services.NewTYTAnalysisService(mongoDb, logger)
+	analysisService := services.NewAnalysisService(mongoDb, logger)
 
-	aytAnalysisService := services.NewAYTAnalysisService(mongoDb, logger)
+	analysisHandler := handlers.NewAnalysisHandler(&analysisService, logger)
 
-	tytAnalysisHandler := handlers.NewTYTAnalysisHandler(tytAnalysisService, *authMiddleware, logger)
-
-	aytAnalysisHandler := handlers.NewAYTAnalysisHandler(aytAnalysisService, *authMiddleware, logger)
-
-	tytRouter := routers.NewTYTRouter(tytAnalysisHandler, *authMiddleware)
-	aytRouter := routers.NewAYTRouter(aytAnalysisHandler, *authMiddleware)
+	analysisRouter := routers.NewAnalysisRouter(analysisHandler, *authMiddleware, logger)
 
 	server := gin.Default()
 
@@ -62,8 +57,7 @@ func main() {
 		})
 	})
 
-	tytRouter.RegisterRoutes(api)
-	aytRouter.RegisterRoutes(api)
+	analysisRouter.RegisterRoutes(api)
 
 	err = server.Run()
 	if err != nil {

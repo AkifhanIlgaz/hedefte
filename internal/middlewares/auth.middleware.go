@@ -54,7 +54,7 @@ func (m *AuthMiddleware) AccessToken() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("uid", claims["sub"])
+		c.Set("userId", claims["sub"])
 
 		c.Next()
 	}
