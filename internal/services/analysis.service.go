@@ -61,14 +61,16 @@ func (s AnalysisService) AddAytAnalysis(req models.AddAYTAnalysis) error {
 func (s AnalysisService) GetTytAnalysis(req models.ExamPaginationQuery) ([]models.TYTAnalysis, response.Meta, error) {
 	collection := s.db.Collection(constants.TytAnalysisCollection)
 
-	s.logger.Info(`userid`, zap.String(`userud`, req.UserId))
-
 	filter := bson.M{
-		"userId": req.UserId,
+		`userId`: req.UserId,
+		"date": bson.M{
+			"$gte": req.GetStart().UTC(),
+			"$lte": req.GetEnd().UTC(),
+		},
 	}
 
 	skip := (req.Page - 1) * req.RowsPerPage
-	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.RowsPerPage))
+	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.RowsPerPage)).SetSort(bson.M{"date": -1})
 
 	cursor, err := collection.Find(context.Background(), filter, opts)
 	if err != nil {
@@ -106,12 +108,12 @@ func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]model
 	filter := bson.M{
 		`userId`: req.UserId,
 		"date": bson.M{
-			"$gte": req.Start,
-			"$lte": req.End,
+			"$gte": req.GetStart(),
+			"$lte": req.GetEnd(),
 		},
 	}
 
-	skip := (req.Page - 1) + req.RowsPerPage
+	skip := (req.Page - 1) * req.RowsPerPage
 	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.RowsPerPage)).SetSort(bson.M{"date": -1})
 
 	cursor, err := collection.Find(context.Background(), filter, opts)
