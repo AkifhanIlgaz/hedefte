@@ -17,10 +17,10 @@ type APIResponse struct {
 }
 
 type Meta struct {
-	Page       int `json:"page,omitempty"`
-	PageSize   int `json:"page_size,omitempty"`
-	Total      int `json:"total,omitempty"`
-	TotalPages int `json:"total_pages,omitempty"`
+	Page       int   `json:"page,omitempty"`
+	Limit      int   `json:"limit,omitempty"`
+	Total      int64 `json:"total,omitempty"`
+	TotalPages int   `json:"totalPages,omitempty"`
 }
 
 type APIError struct {

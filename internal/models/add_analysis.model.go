@@ -1,15 +1,14 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/AkifhanIlgaz/hedefte/internal/constants"
+)
 
 type AddAnalysisRequest interface {
 	CollectionName() string
 }
-
-const (
-	tytAnalysisCollection = "tyt_analysis"
-	aytAnalysisCollection = "ayt_analysis"
-)
 
 type AddTYTAnalysis struct {
 	UserID     string         `json:"-" bson:"userId" `
@@ -27,7 +26,7 @@ type AddTYTAnalysis struct {
 }
 
 func (AddTYTAnalysis) CollectionName() string {
-	return tytAnalysisCollection
+	return constants.TytAnalysisCollection
 }
 
 type AddAYTAnalysis struct {
@@ -44,5 +43,5 @@ type AddAYTAnalysis struct {
 }
 
 func (AddAYTAnalysis) CollectionName() string {
-	return aytAnalysisCollection
+	return constants.AytAnalysisCollection
 }
