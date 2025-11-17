@@ -5,7 +5,7 @@ type LessonAnalysis struct {
 	Wrong         int            `json:"wrong" bson:"wrong" binding:"min=0"`
 	Empty         int            `json:"empty" bson:"empty" binding:"min=0"`
 	Time          int            `json:"time" bson:"time" `
-	Net           float64        `json:"-" bson:"total_net"`
+	Net           float64        `json:"net" bson:"net"`
 	TopicMistakes []TopicMistake `json:"topicMistakes" bson:"topic_mistakes"`
 }
 

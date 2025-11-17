@@ -27,5 +27,7 @@ func (r *AnalysisRouter) RegisterRoutes(router *gin.RouterGroup) {
 	analysisRoute.Use(r.authMiddleware.AccessToken())
 
 	analysisRoute.POST("/tyt", r.analysisHandler.AddTYTAnalysis)
+	analysisRoute.GET("/tyt", r.analysisHandler.GetTytAnalysis)
+
 	analysisRoute.POST("/ayt", r.analysisHandler.AddAYTAnalysis)
 }

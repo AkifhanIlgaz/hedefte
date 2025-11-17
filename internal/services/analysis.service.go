@@ -61,16 +61,14 @@ func (s AnalysisService) AddAytAnalysis(req models.AddAYTAnalysis) error {
 func (s AnalysisService) GetTytAnalysis(req models.ExamPaginationQuery) ([]models.TYTAnalysis, response.Meta, error) {
 	collection := s.db.Collection(constants.TytAnalysisCollection)
 
+	s.logger.Info(`userid`, zap.String(`userud`, req.UserId))
+
 	filter := bson.M{
-		`userId`: req.UserId,
-		"date": bson.M{
-			"$gte": req.Start,
-			"$lte": req.End,
-		},
+		"userId": req.UserId,
 	}
 
-	skip := (req.Page - 1) + req.Limit
-	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.Limit)).SetSort(bson.M{"date": -1})
+	skip := (req.Page - 1) * req.RowsPerPage
+	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.RowsPerPage))
 
 	cursor, err := collection.Find(context.Background(), filter, opts)
 	if err != nil {
@@ -78,21 +76,25 @@ func (s AnalysisService) GetTytAnalysis(req models.ExamPaginationQuery) ([]model
 		return nil, response.Meta{}, fmt.Errorf(`failed to get analysis: %w`, err)
 	}
 
-	var analyses []models.TYTAnalysis
+	analyses := []models.TYTAnalysis{}
 	if err := cursor.All(context.Background(), &analyses); err != nil {
 		s.logger.Error("failed to decode analysis", zap.Error(err))
 		return nil, response.Meta{}, fmt.Errorf(`failed to decode analysis: %w`, err)
 	}
 	defer cursor.Close(context.Background())
 
+	if len(analyses) == 0 {
+		s.logger.Warn("No analyses found for the given filter", zap.Any("filter", filter))
+	}
+
 	total, _ := collection.CountDocuments(context.Background(), filter)
-	totalPages := (int(total) + req.Limit - 1) / req.Limit
+	totalPages := (int(total) + req.RowsPerPage - 1) / req.RowsPerPage
 
 	meta := response.Meta{
-		Total:      total,
-		Page:       req.Page,
-		Limit:      req.Limit,
-		TotalPages: totalPages,
+		Total:       total,
+		Page:        req.Page,
+		RowsPerPage: req.RowsPerPage,
+		TotalPages:  totalPages,
 	}
 
 	return analyses, meta, nil
@@ -109,8 +111,8 @@ func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]model
 		},
 	}
 
-	skip := (req.Page - 1) + req.Limit
-	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.Limit)).SetSort(bson.M{"date": -1})
+	skip := (req.Page - 1) + req.RowsPerPage
+	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.RowsPerPage)).SetSort(bson.M{"date": -1})
 
 	cursor, err := collection.Find(context.Background(), filter, opts)
 	if err != nil {
@@ -126,13 +128,13 @@ func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]model
 	defer cursor.Close(context.Background())
 
 	total, _ := collection.CountDocuments(context.Background(), filter)
-	totalPages := (int(total) + req.Limit - 1) / req.Limit
+	totalPages := (int(total) + req.RowsPerPage - 1) / req.RowsPerPage
 
 	meta := response.Meta{
-		Total:      total,
-		Page:       req.Page,
-		Limit:      req.Limit,
-		TotalPages: totalPages,
+		Total:       total,
+		Page:        req.Page,
+		RowsPerPage: req.RowsPerPage,
+		TotalPages:  totalPages,
 	}
 
 	return analyses, meta, nil

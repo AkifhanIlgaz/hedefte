@@ -109,7 +109,7 @@ func (h *AnalysisHandler) GetTytAnalysis(ctx *gin.Context) {
 	}
 
 	var req models.ExamPaginationQuery
-	if err := ctx.ShouldBindQuery(&req); err != nil {
+	if err := ctx.BindQuery(&req); err != nil {
 		h.logger.Error("Failed to bind request", zap.Error(err))
 		response.Error(ctx, http.StatusBadRequest, "invalid request")
 		return
