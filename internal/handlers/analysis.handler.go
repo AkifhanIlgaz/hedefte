@@ -52,7 +52,7 @@ func (h *AnalysisHandler) AddTYTAnalysis(ctx *gin.Context) {
 
 	req.UserID = userID
 
-	err := h.analysisService.AddAnalysis(req)
+	err := h.analysisService.AddTytAnalysis(req)
 	if err != nil {
 		h.logger.Error("Failed to add TYT analysis", zap.Error(err))
 		response.Error(ctx, http.StatusInternalServerError, "failed to add TYT analysis")
@@ -90,7 +90,7 @@ func (h *AnalysisHandler) AddAYTAnalysis(ctx *gin.Context) {
 
 	req.UserID = userID
 
-	err := h.analysisService.AddAnalysis(req)
+	err := h.analysisService.AddAytAnalysis(req)
 	if err != nil {
 		h.logger.Error("Failed to add AYT analysis", zap.Error(err))
 		response.Error(ctx, http.StatusInternalServerError, "failed to add AYT analysis")

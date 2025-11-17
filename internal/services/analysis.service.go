@@ -32,8 +32,22 @@ func NewAnalysisService(db *mongo.Database, logger *zap.Logger) AnalysisService 
 	}
 }
 
-func (s AnalysisService) AddAnalysis(req models.AddAnalysisRequest) error {
+func (s AnalysisService) AddTytAnalysis(req models.AddTYTAnalysis) error {
 	collection := s.db.Collection(req.CollectionName())
+	req.CalculateNet()
+
+	_, err := collection.InsertOne(context.Background(), req)
+	if err != nil {
+		s.logger.Error("failed to add analysis", zap.Error(err))
+		return fmt.Errorf(`failed to add analysis: %w`, err)
+	}
+
+	return nil
+}
+
+func (s AnalysisService) AddAytAnalysis(req models.AddAYTAnalysis) error {
+	collection := s.db.Collection(req.CollectionName())
+	req.CalculateNet()
 
 	_, err := collection.InsertOne(context.Background(), req)
 	if err != nil {

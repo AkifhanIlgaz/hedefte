@@ -5,6 +5,7 @@ import "time"
 type TYTAnalysis struct {
 	Date       time.Time      `json:"date" bson:"date"`
 	Name       string         `json:"name" bson:"name"`
+	TotalNet   float64        `json:"-" bson:"total_net"`
 	Türkçe     LessonAnalysis `json:"Türkçe" bson:"turkce"`
 	Tarih      LessonAnalysis `json:"Tarih" bson:"tarih"`
 	Coğrafya   LessonAnalysis `json:"Coğrafya" bson:"cografya"`
@@ -19,6 +20,7 @@ type TYTAnalysis struct {
 type AYTAnalysis struct {
 	Date      time.Time      `json:"date" bson:"date"`
 	Name      string         `json:"name" bson:"name"`
+	TotalNet  float64        `json:"-" bson:"total_net"`
 	Edebiyat  LessonAnalysis `json:"Edebiyat" bson:"edebiyat,omitempty"`
 	Tarih     LessonAnalysis `json:"Tarih" bson:"tarih,omitempty"`
 	Coğrafya  LessonAnalysis `json:"Coğrafya" bson:"cografya,omitempty"`
