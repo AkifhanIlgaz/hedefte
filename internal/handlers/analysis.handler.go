@@ -204,12 +204,38 @@ func (h *AnalysisHandler) GetChartData(ctx *gin.Context) {
 
 	req.UserId = userId
 
-	analysis, err := h.analysisService.GetGeneralChartData(req)
-	if err != nil {
-		h.logger.Error("Failed to get TYT analysis", zap.Error(err))
-		response.Error(ctx, http.StatusInternalServerError, "failed to get TYT analysis")
-		return
+	var chartData any
+	var err error
+
+	switch req.ChartType {
+	case models.ChartTypeGeneral:
+		chartData, err = h.analysisService.GetGeneralChartData(req)
+		if err != nil {
+			h.logger.Error("Failed to get general analysis", zap.Error(err))
+			response.Error(ctx, http.StatusInternalServerError, "failed to get general analysis")
+			return
+		}
+	case models.ChartTypeAllLessons:
+		switch req.ExamType {
+		case models.ExamTypeTYT:
+			chartData, err = h.analysisService.GetTytAllLessonsChartData(req)
+			if err != nil {
+				h.logger.Error("Failed to get TYT analysis", zap.Error(err))
+				response.Error(ctx, http.StatusInternalServerError, "failed to get TYT analysis")
+				return
+			}
+		case models.ExamTypeAYT:
+			chartData, err = h.analysisService.GetAytAllLessonsChartData(req)
+			if err != nil {
+				h.logger.Error("Failed to get AYT analysis", zap.Error(err))
+				response.Error(ctx, http.StatusInternalServerError, "failed to get AYT analysis")
+				return
+			}
+		default:
+			response.Error(ctx, http.StatusBadRequest, "Invalid exam type")
+			return
+		}
 	}
 
-	response.Success(ctx, "TYT analizi başarıyla alındı.", response.WithPayload(analysis))
+	response.Success(ctx, "Analysis data retrieved successfully.", response.WithPayload(chartData))
 }
