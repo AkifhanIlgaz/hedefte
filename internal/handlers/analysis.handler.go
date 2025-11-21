@@ -137,3 +137,41 @@ func (h *AnalysisHandler) GetTytAnalysis(ctx *gin.Context) {
 
 	response.Success(ctx, "TYT analizi başarıyla alındı.", response.WithPayload(analysis), response.WithMeta(&metadata))
 }
+
+func (h *AnalysisHandler) GetAytAnalysis(ctx *gin.Context) {
+	userId := ctx.GetString("userId")
+	if userId == "" {
+		h.logger.Warn("Unauthorized access attempt", zap.String("reason", "userID is empty"))
+		response.Error(ctx, http.StatusUnauthorized, "you are not logged in")
+		return
+	}
+
+	var req models.ExamPaginationQuery
+	if err := ctx.BindQuery(&req); err != nil {
+		h.logger.Error("Failed to bind request", zap.Error(err))
+		response.Error(ctx, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(&req); err != nil {
+		var validationErrors validator.ValidationErrors
+		if errors.As(err, &validationErrors) {
+			response.Error(ctx, http.StatusBadRequest, "Validation failed", response.WithValidationErrors(validationErrors))
+			return
+		}
+		response.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	req.UserId = userId
+
+	analysis, metadata, err := h.analysisService.GetAytAnalysis(req)
+	if err != nil {
+		h.logger.Error("Failed to get AYT analysis", zap.Error(err))
+		response.Error(ctx, http.StatusInternalServerError, "failed to get AYT analysis")
+		return
+	}
+
+	response.Success(ctx, "AYT analizi başarıyla alındı.", response.WithPayload(analysis), response.WithMeta(&metadata))
+}
