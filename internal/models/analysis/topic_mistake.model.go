@@ -1,4 +1,4 @@
-package models
+package analysis
 
 type TopicMistake struct {
 	TopicName    string `json:"topicName" bson:"topic_name" `

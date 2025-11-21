@@ -1,4 +1,4 @@
-package models
+package analysis
 
 import (
 	"time"

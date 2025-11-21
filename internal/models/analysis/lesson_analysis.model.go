@@ -1,4 +1,4 @@
-package models
+package analysis
 
 type LessonAnalysis struct {
 	Correct       int            `json:"correct" bson:"correct" binding:"min=0"`

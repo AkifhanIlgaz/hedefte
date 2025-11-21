@@ -32,7 +32,7 @@ func (h *AnalysisHandler) AddTYTAnalysis(ctx *gin.Context) {
 		return
 	}
 
-	var req models.AddTYTAnalysis
+	var req models.AddTytAnalysis
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		h.logger.Error("Failed to bind request", zap.Error(err))
 		response.Error(ctx, http.StatusBadRequest, "invalid request")
@@ -70,7 +70,7 @@ func (h *AnalysisHandler) AddAYTAnalysis(ctx *gin.Context) {
 		return
 	}
 
-	var req models.AddAYTAnalysis
+	var req models.AddAytAnalysis
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		h.logger.Error("Failed to bind request", zap.Error(err))
 		response.Error(ctx, http.StatusBadRequest, "invalid request")

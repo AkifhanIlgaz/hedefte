@@ -32,7 +32,7 @@ func NewAnalysisService(db *mongo.Database, logger *zap.Logger) AnalysisService 
 	}
 }
 
-func (s AnalysisService) AddTytAnalysis(req models.AddTYTAnalysis) error {
+func (s AnalysisService) AddTytAnalysis(req models.AddTytAnalysis) error {
 	collection := s.db.Collection(req.CollectionName())
 	req.CalculateNet()
 
@@ -45,7 +45,7 @@ func (s AnalysisService) AddTytAnalysis(req models.AddTYTAnalysis) error {
 	return nil
 }
 
-func (s AnalysisService) AddAytAnalysis(req models.AddAYTAnalysis) error {
+func (s AnalysisService) AddAytAnalysis(req models.AddAytAnalysis) error {
 	collection := s.db.Collection(req.CollectionName())
 	req.CalculateNet()
 
@@ -58,7 +58,7 @@ func (s AnalysisService) AddAytAnalysis(req models.AddAYTAnalysis) error {
 	return nil
 }
 
-func (s AnalysisService) GetTytAnalysis(req models.ExamPaginationQuery) ([]models.TYTAnalysis, response.Meta, error) {
+func (s AnalysisService) GetTytAnalysis(req models.ExamPaginationQuery) ([]models.TytAnalysis, response.Meta, error) {
 	collection := s.db.Collection(constants.TytAnalysisCollection)
 
 	filter := bson.M{
@@ -78,7 +78,7 @@ func (s AnalysisService) GetTytAnalysis(req models.ExamPaginationQuery) ([]model
 		return nil, response.Meta{}, fmt.Errorf(`failed to get analysis: %w`, err)
 	}
 
-	analyses := []models.TYTAnalysis{}
+	analyses := []models.TytAnalysis{}
 	if err := cursor.All(context.Background(), &analyses); err != nil {
 		s.logger.Error("failed to decode analysis", zap.Error(err))
 		return nil, response.Meta{}, fmt.Errorf(`failed to decode analysis: %w`, err)
@@ -102,7 +102,7 @@ func (s AnalysisService) GetTytAnalysis(req models.ExamPaginationQuery) ([]model
 	return analyses, meta, nil
 }
 
-func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]models.AYTAnalysis, response.Meta, error) {
+func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]models.AytAnalysis, response.Meta, error) {
 	collection := s.db.Collection(constants.AytAnalysisCollection)
 
 	filter := bson.M{
@@ -122,7 +122,7 @@ func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]model
 		return nil, response.Meta{}, fmt.Errorf(`failed to get analysis: %w`, err)
 	}
 
-	var analyses []models.AYTAnalysis
+	var analyses []models.AytAnalysis
 	if err := cursor.All(context.Background(), &analyses); err != nil {
 		s.logger.Error("failed to decode analysis", zap.Error(err))
 		return nil, response.Meta{}, fmt.Errorf(`failed to decode analysis: %w`, err)
@@ -174,12 +174,12 @@ func (s AnalysisService) getTytGeneralChartData(req models.ChartDataQuery) (mode
 
 	chartData := models.GeneralChartData{}
 	for cursor.Next(context.Background()) {
-		var analysis models.TYTAnalysis
+		var analysis models.TytAnalysis
 		if err := cursor.Decode(&analysis); err != nil {
 			s.logger.Error("failed to decode analysis", zap.Error(err))
 			return models.GeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
 		}
-		analysis.ApplyToGeneralChartData(&chartData)
+		analysis.ApplyAnalysisToGeneralChartData(&chartData)
 	}
 	defer cursor.Close(context.Background())
 
@@ -207,12 +207,12 @@ func (s AnalysisService) getAytGeneralChartData(req models.ChartDataQuery) (mode
 
 	chartData := models.GeneralChartData{}
 	for cursor.Next(context.Background()) {
-		var analysis models.AYTAnalysis
+		var analysis models.AytAnalysis
 		if err := cursor.Decode(&analysis); err != nil {
 			s.logger.Error("failed to decode analysis", zap.Error(err))
 			return models.GeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
 		}
-		analysis.ApplyToGeneralChartData(&chartData)
+		analysis.ApplyAnalysisToGeneralChartData(&chartData)
 	}
 	defer cursor.Close(context.Background())
 
@@ -238,15 +238,15 @@ func (s AnalysisService) GetTytAllLessonsChartData(req models.ChartDataQuery) (m
 		return models.TytAllLessonsChartData{}, fmt.Errorf(`failed to get analysis: %w`, err)
 	}
 
-	chartData := models.TytAllLessonsChartData{}
+	chartData := models.NewTytAllLessonsChartData()
 	for cursor.Next(context.Background()) {
-		var analysis models.TYTAnalysis
+		var analysis models.TytAnalysis
 		if err := cursor.Decode(&analysis); err != nil {
 			s.logger.Error("failed to decode analysis", zap.Error(err))
 			return models.TytAllLessonsChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
 		}
 
-		analysis.ApplyToAllLessonsChartData(&chartData)
+		analysis.ApplyAllLessonsToChartData(&chartData)
 	}
 
 	defer cursor.Close(context.Background())
@@ -273,14 +273,14 @@ func (s AnalysisService) GetAytAllLessonsChartData(req models.ChartDataQuery) (m
 		return models.AytAllLessonsChartData{}, fmt.Errorf(`failed to get analysis: %w`, err)
 	}
 
-	chartData := models.AytAllLessonsChartData{}
+	chartData := models.NewAytAllLessonsChartData()
 	for cursor.Next(context.Background()) {
-		var analysis models.AYTAnalysis
+		var analysis models.AytAnalysis
 		if err := cursor.Decode(&analysis); err != nil {
 			s.logger.Error("failed to decode analysis", zap.Error(err))
 			return models.AytAllLessonsChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
 		}
-		analysis.ApplyToAllLessonsChartData(&chartData)
+		analysis.ApplyAllLessonsToChartData(&chartData)
 	}
 
 	defer cursor.Close(context.Background())

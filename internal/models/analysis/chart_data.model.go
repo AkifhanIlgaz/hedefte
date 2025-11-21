@@ -1,4 +1,4 @@
-package models
+package analysis
 
 import "time"
 
@@ -30,6 +30,32 @@ type TytAllLessonsChartData struct {
 	Biyoloji   LessonChartData `json:"Biyoloji" bson:"biyoloji"`
 }
 
+func NewTytAllLessonsChartData() TytAllLessonsChartData {
+	return TytAllLessonsChartData{
+		Türkçe:     NewLessonChartData(),
+		Tarih:      NewLessonChartData(),
+		Coğrafya:   NewLessonChartData(),
+		Felsefe:    NewLessonChartData(),
+		DinKültürü: NewLessonChartData(),
+		Matematik:  NewLessonChartData(),
+		Fizik:      NewLessonChartData(),
+		Kimya:      NewLessonChartData(),
+		Biyoloji:   NewLessonChartData(),
+	}
+}
+
+func NewAytAllLessonsChartData() AytAllLessonsChartData {
+	return AytAllLessonsChartData{
+		Edebiyat:  NewLessonChartData(),
+		Tarih:     NewLessonChartData(),
+		Coğrafya:  NewLessonChartData(),
+		Matematik: NewLessonChartData(),
+		Fizik:     NewLessonChartData(),
+		Kimya:     NewLessonChartData(),
+		Biyoloji:  NewLessonChartData(),
+	}
+}
+
 type AytAllLessonsChartData struct {
 	ExamCount  int             `json:"examCount"`
 	MaxNet     float64         `json:"maxNet"`
@@ -49,4 +75,14 @@ type LessonChartData struct {
 	MaxNet        float64            `json:"maxNet"`
 	Exams         []GeneralChartExam `json:"exams,omitempty"`
 	TopicMistakes map[string]int     `json:"topicMistakes"`
+}
+
+func NewLessonChartData() LessonChartData {
+	return LessonChartData{
+		AverageNet:    0,
+		AverageTime:   0,
+		MaxNet:        0,
+		Exams:         []GeneralChartExam{},
+		TopicMistakes: map[string]int{},
+	}
 }
