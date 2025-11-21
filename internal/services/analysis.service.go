@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"math"
 
 	"github.com/AkifhanIlgaz/hedefte/internal/constants"
 	"github.com/AkifhanIlgaz/hedefte/internal/models"
@@ -140,4 +141,111 @@ func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]model
 	}
 
 	return analyses, meta, nil
+}
+
+func (s AnalysisService) GetGeneralChartData(req models.ChartDataQuery) (models.GeneralChartData, error) {
+	switch req.ExamType {
+	case models.ExamTypeTYT:
+		return s.getTytGeneralChartData(req)
+	case models.ExamTypeAYT:
+		return s.getAytGeneralChartData(req)
+	default:
+		return models.GeneralChartData{}, fmt.Errorf(`invalid chart type: %s`, req.ExamType)
+	}
+}
+
+func (s AnalysisService) getTytGeneralChartData(req models.ChartDataQuery) (models.GeneralChartData, error) {
+	collection := s.db.Collection(constants.TytAnalysisCollection)
+
+	filter := bson.M{
+		`userId`: req.UserId,
+		"date": bson.M{
+			"$gte": req.GetStart(),
+			"$lte": req.GetEnd(),
+		},
+	}
+
+	opts := options.Find().SetSort(bson.M{"date": -1})
+
+	cursor, err := collection.Find(context.Background(), filter, opts)
+	if err != nil {
+		s.logger.Error("failed to get analysis", zap.Error(err))
+		return models.GeneralChartData{}, fmt.Errorf(`failed to get analysis: %w`, err)
+	}
+
+	chartData := models.GeneralChartData{}
+	chartData.MinNet = 140
+	sumNet := 0.0
+	for cursor.Next(context.Background()) {
+		var analysis models.TYTAnalysis
+		if err := cursor.Decode(&analysis); err != nil {
+			s.logger.Error("failed to decode analysis", zap.Error(err))
+			return models.GeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
+		}
+
+		var exam models.GeneralChartExam
+		exam.TotalNet = analysis.TotalNet
+		exam.Date = analysis.Date
+		exam.Name = analysis.Name
+
+		chartData.MaxNet = math.Max(chartData.MaxNet, exam.TotalNet)
+		chartData.MinNet = math.Min(chartData.MinNet, exam.TotalNet)
+
+		chartData.ExamCount++
+		sumNet += exam.TotalNet
+		chartData.Exams = append(chartData.Exams, exam)
+	}
+
+	chartData.AverageNet = sumNet / float64(chartData.ExamCount)
+	defer cursor.Close(context.Background())
+
+	return chartData, nil
+}
+
+func (s AnalysisService) getAytGeneralChartData(req models.ChartDataQuery) (models.GeneralChartData, error) {
+	collection := s.db.Collection(constants.AytAnalysisCollection)
+
+	filter := bson.M{
+		`userId`: req.UserId,
+		"date": bson.M{
+			"$gte": req.GetStart(),
+			"$lte": req.GetEnd(),
+		},
+	}
+
+	opts := options.Find().SetSort(bson.M{"date": -1})
+
+	cursor, err := collection.Find(context.Background(), filter, opts)
+	if err != nil {
+		s.logger.Error("failed to get analysis", zap.Error(err))
+		return models.GeneralChartData{}, fmt.Errorf(`failed to get analysis: %w`, err)
+	}
+
+	chartData := models.GeneralChartData{}
+	chartData.MinNet = 140
+	sumNet := 0.0
+	for cursor.Next(context.Background()) {
+		var analysis models.TYTAnalysis
+		if err := cursor.Decode(&analysis); err != nil {
+			s.logger.Error("failed to decode analysis", zap.Error(err))
+			return models.GeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
+		}
+
+		var exam models.GeneralChartExam
+		exam.TotalNet = analysis.TotalNet
+		exam.Date = analysis.Date
+		exam.Name = analysis.Name
+
+		chartData.MaxNet = math.Max(chartData.MaxNet, exam.TotalNet)
+		chartData.MinNet = math.Min(chartData.MinNet, exam.TotalNet)
+
+		chartData.ExamCount++
+		sumNet += exam.TotalNet
+		chartData.Exams = append(chartData.Exams, exam)
+	}
+
+	chartData.AverageNet = sumNet / float64(chartData.ExamCount)
+	defer cursor.Close(context.Background())
+
+	return chartData, nil
 }
