@@ -32,7 +32,6 @@ type ChartDataQuery struct {
 	UserId       string    `json:"-"`
 	ExamType     ExamType  `form:"exam"`
 	ChartType    ChartType `form:"chartType"`
-	Lesson       string    `form:"lesson"`
 	TimeInterval int       `form:"timeInterval"`
 }
 
