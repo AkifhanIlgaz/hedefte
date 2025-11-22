@@ -32,6 +32,7 @@ type ChartDataQuery struct {
 	UserId       string    `json:"-"`
 	ExamType     ExamType  `form:"exam"`
 	ChartType    ChartType `form:"chartType"`
+	Lesson       string    `form:"lesson"`
 	TimeInterval int       `form:"timeInterval"`
 }
 
@@ -46,8 +47,7 @@ type ChartType string
 
 const (
 	ChartTypeGeneral        ChartType = "general"
-	ChartTypeAllLessons     ChartType = "all_lessons"
-	ChartTypeLessonSpecific ChartType = "lesson_specific"
+	ChartTypeLessonSpecific ChartType = "lesson"
 )
 
 func (p ChartDataQuery) GetStart() time.Time {
