@@ -19,5 +19,8 @@ type GeneralChartData = analysis.GeneralChartData
 type GeneralChartExam = analysis.GeneralChartExam
 type LessonGeneralChartData = analysis.LessonGeneralChartData
 
+type LessonSpecificChartData = analysis.LessonSpecificChartData
+
 // Constructor functions
 var NewGeneralChartData = analysis.NewGeneralChartData
+var NewLessonSpecificChartData = analysis.NewLessonSpecificChartData

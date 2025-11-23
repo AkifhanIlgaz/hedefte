@@ -219,7 +219,8 @@ func (h *AnalysisHandler) getChartDataByType(req models.ChartDataQuery) (any, er
 	switch req.ChartType {
 	case models.ChartTypeGeneral:
 		return h.analysisService.GetGeneralChartData(req)
-
+	case models.ChartTypeLessonSpecific:
+		return h.analysisService.GetLessonChartData(req)
 	default:
 		return nil, errors.New("invalid chart type")
 	}

@@ -9,13 +9,13 @@ type AYTAnalysis struct {
 	Date      time.Time      `json:"date" bson:"date"`
 	Name      string         `json:"name" bson:"name"`
 	TotalNet  float64        `json:"totalNet" bson:"total_net"`
-	Edebiyat  LessonAnalysis `json:"Edebiyat" bson:"edebiyat,omitempty"`
-	Tarih     LessonAnalysis `json:"Tarih" bson:"tarih,omitempty"`
-	Coğrafya  LessonAnalysis `json:"Coğrafya" bson:"cografya,omitempty"`
-	Matematik LessonAnalysis `json:"Matematik" bson:"matematik,omitempty"`
-	Fizik     LessonAnalysis `json:"Fizik" bson:"fizik,omitempty"`
-	Kimya     LessonAnalysis `json:"Kimya" bson:"kimya,omitempty"`
-	Biyoloji  LessonAnalysis `json:"Biyoloji" bson:"biyoloji,omitempty"`
+	Edebiyat  LessonAnalysis `json:"Edebiyat" bson:"Edebiyat,omitempty"`
+	Tarih     LessonAnalysis `json:"Tarih" bson:"Tarih,omitempty"`
+	Coğrafya  LessonAnalysis `json:"Coğrafya" bson:"Coğrafya,omitempty"`
+	Matematik LessonAnalysis `json:"Matematik" bson:"Matematik,omitempty"`
+	Fizik     LessonAnalysis `json:"Fizik" bson:"Fizik,omitempty"`
+	Kimya     LessonAnalysis `json:"Kimya" bson:"Kimya,omitempty"`
+	Biyoloji  LessonAnalysis `json:"Biyoloji" bson:"Biyoloji,omitempty"`
 }
 
 func (a AYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *GeneralChartData) {
