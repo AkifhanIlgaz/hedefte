@@ -142,8 +142,12 @@ func (s AnalysisService) GetAytAnalysis(req models.ExamPaginationQuery) ([]model
 	return analyses, meta, nil
 }
 
-func (s AnalysisService) GetTytGeneralChartData(req models.ChartDataQuery) (models.TytGeneralChartData, error) {
+func (s AnalysisService) GetGeneralChartData(req models.ChartDataQuery) (models.GeneralChartData, error) {
 	collection := s.db.Collection(constants.TytAnalysisCollection)
+	if req.ExamType == models.ExamTypeAYT {
+		collection = s.db.Collection(constants.AytAnalysisCollection)
+	}
+
 	filter := bson.M{
 		`userId`: req.UserId,
 		"date": bson.M{
@@ -156,72 +160,36 @@ func (s AnalysisService) GetTytGeneralChartData(req models.ChartDataQuery) (mode
 	cursor, err := collection.Find(context.Background(), filter, opts)
 	if err != nil {
 		s.logger.Error("failed to get analysis", zap.Error(err))
-		return models.TytGeneralChartData{}, fmt.Errorf(`failed to get analysis: %w`, err)
+		return models.GeneralChartData{}, fmt.Errorf(`failed to get analysis: %w`, err)
 	}
 
-	chartData := models.NewTytGeneralChartData()
-	switch req.ExamType {
-	case models.ExamTypeAYT:
-		for cursor.Next(context.Background()) {
-			var analysis models.TytAnalysis
-			if err := cursor.Decode(&analysis); err != nil {
-				s.logger.Error("failed to decode analysis", zap.Error(err))
-				return models.TytGeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
+	chartData := models.NewGeneralChartData()
+
+	for cursor.Next(context.Background()) {
+		var analysis any
+		switch req.ExamType {
+		case models.ExamTypeTYT:
+			var tytAnalysis models.TytAnalysis
+			if err := cursor.Decode(&tytAnalysis); err != nil {
+				s.logger.Error("failed to decode TYT analysis", zap.Error(err))
+				return models.GeneralChartData{}, fmt.Errorf("failed to decode TYT analysis: %w", err)
 			}
-			analysis.ApplyAnalysisToGeneralChartData(&chartData)
+			analysis = tytAnalysis
+		case models.ExamTypeAYT:
+			var aytAnalysis models.AytAnalysis
+			if err := cursor.Decode(&aytAnalysis); err != nil {
+				s.logger.Error("failed to decode AYT analysis", zap.Error(err))
+				return models.GeneralChartData{}, fmt.Errorf("failed to decode AYT analysis: %w", err)
+			}
+			analysis = aytAnalysis
+		default:
+			return models.GeneralChartData{}, fmt.Errorf("unsupported exam type: %v", req.ExamType)
 		}
-	default:
-		for cursor.Next(context.Background()) {
-			var analysis models.TytAnalysis
-			if err := cursor.Decode(&analysis); err != nil {
-				s.logger.Error("failed to decode analysis", zap.Error(err))
-				return models.TytGeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
-			}
-			analysis.ApplyAnalysisToGeneralChartData(&chartData)
-		}
-	}
-
-	defer cursor.Close(context.Background())
-
-	return chartData, nil
-}
-
-func (s AnalysisService) GetAytGeneralChartData(req models.ChartDataQuery) (models.AytGeneralChartData, error) {
-	collection := s.db.Collection(constants.AytAnalysisCollection)
-	filter := bson.M{
-		`userId`: req.UserId,
-		"date": bson.M{
-			"$gte": req.GetStart(),
-			"$lte": req.GetEnd(),
-		},
-	}
-	opts := options.Find().SetSort(bson.M{"date": 1})
-
-	cursor, err := collection.Find(context.Background(), filter, opts)
-	if err != nil {
-		s.logger.Error("failed to get analysis", zap.Error(err))
-		return models.AytGeneralChartData{}, fmt.Errorf(`failed to get analysis: %w`, err)
-	}
-
-	chartData := models.NewAytGeneralChartData()
-	switch req.ExamType {
-	case models.ExamTypeAYT:
-		for cursor.Next(context.Background()) {
-			var analysis models.AytAnalysis
-			if err := cursor.Decode(&analysis); err != nil {
-				s.logger.Error("failed to decode analysis", zap.Error(err))
-				return models.AytGeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
-			}
-			analysis.ApplyAnalysisToGeneralChartData(&chartData)
-		}
-	default:
-		for cursor.Next(context.Background()) {
-			var analysis models.AytAnalysis
-			if err := cursor.Decode(&analysis); err != nil {
-				s.logger.Error("failed to decode analysis", zap.Error(err))
-				return models.AytGeneralChartData{}, fmt.Errorf(`failed to decode analysis: %w`, err)
-			}
-			analysis.ApplyAnalysisToGeneralChartData(&chartData)
+		if a, ok := analysis.(models.Analysis); ok {
+			a.ApplyAnalysisToGeneralChartData(&chartData)
+		} else {
+			s.logger.Error("decoded analysis does not implement models.Analysis")
+			return models.GeneralChartData{}, fmt.Errorf("decoded analysis does not implement models.Analysis")
 		}
 	}
 

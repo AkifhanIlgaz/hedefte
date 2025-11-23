@@ -18,7 +18,7 @@ type AYTAnalysis struct {
 	Biyoloji  LessonAnalysis `json:"Biyoloji" bson:"biyoloji,omitempty"`
 }
 
-func (a AYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *AytGeneralChartData) {
+func (a AYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *GeneralChartData) {
 	exam := GeneralChartExam{
 		TotalNet: a.TotalNet,
 		Date:     a.Date,
@@ -30,27 +30,13 @@ func (a AYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *AytGeneralChartD
 
 	chartData.Exams = append(chartData.Exams, exam)
 
-	a.ApplyLessonAnalysisToTytChartData(a.Edebiyat, &chartData.Edebiyat, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Tarih, &chartData.Tarih, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Coğrafya, &chartData.Coğrafya, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Matematik, &chartData.Matematik, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Fizik, &chartData.Fizik, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Kimya, &chartData.Kimya, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Biyoloji, &chartData.Biyoloji, chartData.ExamCount)
+	ApplyLessonAnalysisToGeneralChartData("Edebiyat", a.Edebiyat, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Tarih", a.Tarih, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Coğrafya", a.Coğrafya, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Matematik", a.Matematik, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Fizik", a.Fizik, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Kimya", a.Kimya, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Biyoloji", a.Biyoloji, chartData)
 
 	chartData.ExamCount++
-}
-
-func (a AYTAnalysis) ApplyLessonAnalysisToTytChartData(lessonAnalysis LessonAnalysis, chartData *LessonChartData, examCount int) {
-	chartData.MaxNet = math.Max(chartData.MaxNet, lessonAnalysis.Net)
-	chartData.AverageTime = (chartData.AverageTime*(examCount) + lessonAnalysis.Time) / (examCount + 1)
-	chartData.AverageNet = (chartData.AverageNet*float64(examCount) + lessonAnalysis.Net) / float64(examCount+1)
-	chartData.Exams = append(chartData.Exams, GeneralChartExam{
-		Date:     a.Date,
-		Name:     a.Name,
-		TotalNet: lessonAnalysis.Net,
-	})
-	for _, topicMistake := range lessonAnalysis.TopicMistakes {
-		chartData.TopicMistakes[topicMistake.TopicName]++
-	}
 }

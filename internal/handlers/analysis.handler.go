@@ -218,21 +218,9 @@ func (h *AnalysisHandler) GetChartData(ctx *gin.Context) {
 func (h *AnalysisHandler) getChartDataByType(req models.ChartDataQuery) (any, error) {
 	switch req.ChartType {
 	case models.ChartTypeGeneral:
-		return h.getGeneralChartData(req)
+		return h.analysisService.GetGeneralChartData(req)
 
 	default:
 		return nil, errors.New("invalid chart type")
-	}
-}
-
-// getGeneralChartData retrieves general chart data based on exam type
-func (h *AnalysisHandler) getGeneralChartData(req models.ChartDataQuery) (any, error) {
-	switch req.ExamType {
-	case models.ExamTypeTYT:
-		return h.analysisService.GetTytGeneralChartData(req)
-	case models.ExamTypeAYT:
-		return h.analysisService.GetAytGeneralChartData(req)
-	default:
-		return nil, errors.New("invalid exam type")
 	}
 }

@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type Analysis interface {
+	ApplyAnalysisToGeneralChartData(chartData *GeneralChartData)
+}
+
 type TYTAnalysis struct {
 	Date       time.Time      `json:"date" bson:"date"`
 	Name       string         `json:"name" bson:"name"`
@@ -20,7 +24,7 @@ type TYTAnalysis struct {
 	Biyoloji   LessonAnalysis `json:"Biyoloji" bson:"biyoloji"`
 }
 
-func (a TYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *TytGeneralChartData) {
+func (a TYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *GeneralChartData) {
 	exam := GeneralChartExam{
 		TotalNet: a.TotalNet,
 		Date:     a.Date,
@@ -29,32 +33,35 @@ func (a TYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *TytGeneralChartD
 
 	chartData.MaxNet = math.Max(chartData.MaxNet, exam.TotalNet)
 	chartData.AverageNet = calculateAverage(chartData.AverageNet, a.TotalNet, float64(chartData.ExamCount))
-
 	chartData.Exams = append(chartData.Exams, exam)
 
-	a.ApplyLessonAnalysisToTytChartData(a.Türkçe, &chartData.Türkçe, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Tarih, &chartData.Tarih, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Coğrafya, &chartData.Coğrafya, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Felsefe, &chartData.Felsefe, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.DinKültürü, &chartData.DinKültürü, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Matematik, &chartData.Matematik, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Fizik, &chartData.Fizik, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Kimya, &chartData.Kimya, chartData.ExamCount)
-	a.ApplyLessonAnalysisToTytChartData(a.Biyoloji, &chartData.Biyoloji, chartData.ExamCount)
+	ApplyLessonAnalysisToGeneralChartData("Türkçe", a.Türkçe, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Tarih", a.Tarih, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Coğrafya", a.Coğrafya, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Felsefe", a.Felsefe, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Din Kültürü", a.DinKültürü, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Matematik", a.Matematik, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Fizik", a.Fizik, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Kimya", a.Kimya, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Biyoloji", a.Biyoloji, chartData)
 
 	chartData.ExamCount++
 }
 
-func (a TYTAnalysis) ApplyLessonAnalysisToTytChartData(lessonAnalysis LessonAnalysis, chartData *LessonChartData, examCount int) {
-	chartData.MaxNet = math.Max(chartData.MaxNet, lessonAnalysis.Net)
-	chartData.AverageTime = (chartData.AverageTime*(examCount) + lessonAnalysis.Time) / (examCount + 1)
-	chartData.AverageNet = (chartData.AverageNet*float64(examCount) + lessonAnalysis.Net) / float64(examCount+1)
-	chartData.Exams = append(chartData.Exams, GeneralChartExam{
-		Date:     a.Date,
-		Name:     a.Name,
-		TotalNet: lessonAnalysis.Net,
-	})
-	for _, topicMistake := range lessonAnalysis.TopicMistakes {
-		chartData.TopicMistakes[topicMistake.TopicName]++
-	}
+func ApplyLessonAnalysisToGeneralChartData(lessonName string, lessonAnalysis LessonAnalysis, chartData *GeneralChartData) {
+	lessonData := chartData.Lessons[lessonName]
+
+	lessonData.MaxNet = math.Max(lessonData.MaxNet, lessonAnalysis.Net)
+	lessonData.AverageTime = (lessonData.AverageTime*(chartData.ExamCount) + lessonAnalysis.Time) / (chartData.ExamCount + 1)
+	lessonData.AverageNet = (lessonData.AverageNet*float64(chartData.ExamCount) + lessonAnalysis.Net) / float64(chartData.ExamCount+1)
+
+	chartData.Lessons[lessonName] = lessonData
+	// lessonData.Exams = append(lessonData.Exams, GeneralChartExam{
+	// 	Date:     a.Date,
+	// 	Name:     a.Name,
+	// 	TotalNet: lessonAnalysis.Net,
+	// })
+	// for _, topicMistake := range lessonAnalysis.TopicMistakes {
+	// 	lessonData.TopicMistakes[topicMistake.TopicName]++
+	// }
 }

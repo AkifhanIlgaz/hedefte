@@ -2,6 +2,8 @@ package models
 
 import "github.com/AkifhanIlgaz/hedefte/internal/models/analysis"
 
+type Analysis = analysis.Analysis
+
 type TytAnalysis = analysis.TYTAnalysis
 type AddTytAnalysis = analysis.AddTYTAnalysis
 
@@ -12,13 +14,10 @@ type LessonAnalysis = analysis.LessonAnalysis
 type TopicMistake = analysis.TopicMistake
 
 // Chart Data types
-type TytGeneralChartData = analysis.TytGeneralChartData
-type AytGeneralChartData = analysis.AytGeneralChartData
+type GeneralChartData = analysis.GeneralChartData
 
 type GeneralChartExam = analysis.GeneralChartExam
-type LessonChartData = analysis.LessonChartData
+type LessonGeneralChartData = analysis.LessonGeneralChartData
 
 // Constructor functions
-var NewLessonChartData = analysis.NewLessonChartData
-var NewTytGeneralChartData = analysis.NewTytGeneralChartData
-var NewAytGeneralChartData = analysis.NewAytGeneralChartData
+var NewGeneralChartData = analysis.NewGeneralChartData
