@@ -19,6 +19,19 @@ type AnalysisService struct {
 	logger *zap.Logger
 }
 
+var keyMap = map[string]string{
+	"edebiyat":    "edebiyat",
+	"türkçe":      "turkce",
+	"tarih":       "tarih",
+	"coğrafya":    "cografya",
+	"felsefe":     "felsefe",
+	"din kültürü": "din_kulturu",
+	"matematik":   "matematik",
+	"fizik":       "fizik",
+	"kimya":       "kimya",
+	"biyoloji":    "biyoloji",
+}
+
 func NewAnalysisService(db *mongo.Database, logger *zap.Logger) AnalysisService {
 	indexModel := mongo.IndexModel{
 		Keys: bson.M{"date": -1},
@@ -212,11 +225,11 @@ func (s AnalysisService) GetLessonChartData(req models.ChartDataQuery) (models.L
 			"$lte": req.GetEnd(),
 		},
 	}
-
+	s.logger.Error("failed to get analysis", zap.Any(`gelen data`, req.Lesson), zap.Any("donusturulmus", keyMap[req.Lesson]))
 	projection := bson.M{"date": 1,
-		"name":     1,
-		req.Lesson: 1,
-		"_id":      0,
+		"name":             1,
+		keyMap[req.Lesson]: 1,
+		"_id":              0,
 	}
 
 	opts := options.Find().SetSort(bson.M{"date": 1}).SetProjection(projection)
@@ -248,7 +261,7 @@ func (s AnalysisService) GetLessonChartData(req models.ChartDataQuery) (models.L
 			return models.LessonSpecificChartData{}, fmt.Errorf("failed to decode analysis: %w", err)
 		}
 
-		lessonValue, exists := analysis[req.Lesson]
+		lessonValue, exists := analysis[keyMap[req.Lesson]]
 		if !exists {
 			s.logger.Error("lesson key not found in analysis map", zap.String("lesson", req.Lesson), zap.Any("analysis", analysis))
 			return models.LessonSpecificChartData{}, fmt.Errorf("lesson key '%s' not found in analysis map", req.Lesson)

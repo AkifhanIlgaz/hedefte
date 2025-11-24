@@ -13,15 +13,15 @@ type TYTAnalysis struct {
 	Date       time.Time      `json:"date" bson:"date"`
 	Name       string         `json:"name" bson:"name"`
 	TotalNet   float64        `json:"totalNet" bson:"total_net"`
-	Türkçe     LessonAnalysis `json:"Türkçe" bson:"Türkçe"`
-	Tarih      LessonAnalysis `json:"Tarih" bson:"Tarih"`
-	Coğrafya   LessonAnalysis `json:"Coğrafya" bson:"Coğrafya"`
-	Felsefe    LessonAnalysis `json:"Felsefe" bson:"Felsefe"`
-	DinKültürü LessonAnalysis `json:"Din Kültürü" bson:"DinKültürü"`
-	Matematik  LessonAnalysis `json:"Matematik" bson:"Matematik"`
-	Fizik      LessonAnalysis `json:"Fizik" bson:"Fizik"`
-	Kimya      LessonAnalysis `json:"Kimya" bson:"Kimya"`
-	Biyoloji   LessonAnalysis `json:"Biyoloji" bson:"Biyoloji"`
+	Türkçe     LessonAnalysis `json:"Türkçe" bson:"turkce"`
+	Tarih      LessonAnalysis `json:"Tarih" bson:"tarih"`
+	Coğrafya   LessonAnalysis `json:"Coğrafya" bson:"cografya"`
+	Felsefe    LessonAnalysis `json:"Felsefe" bson:"felsefe"`
+	DinKültürü LessonAnalysis `json:"Din Kültürü" bson:"din_kulturu"`
+	Matematik  LessonAnalysis `json:"Matematik" bson:"matematik"`
+	Fizik      LessonAnalysis `json:"Fizik" bson:"fizik"`
+	Kimya      LessonAnalysis `json:"Kimya" bson:"kimya"`
+	Biyoloji   LessonAnalysis `json:"Biyoloji" bson:"biyoloji"`
 }
 
 func (a TYTAnalysis) ApplyAnalysisToGeneralChartData(chartData *GeneralChartData) {
