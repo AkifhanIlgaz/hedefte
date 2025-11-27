@@ -7,6 +7,7 @@ import (
 	"github.com/AkifhanIlgaz/hedefte/internal/config"
 	"github.com/AkifhanIlgaz/hedefte/internal/handlers"
 	"github.com/AkifhanIlgaz/hedefte/internal/middlewares"
+	"github.com/AkifhanIlgaz/hedefte/internal/repositories"
 	"github.com/AkifhanIlgaz/hedefte/internal/routers"
 	"github.com/AkifhanIlgaz/hedefte/internal/services"
 	"github.com/AkifhanIlgaz/hedefte/pkg/db"
@@ -33,7 +34,9 @@ func main() {
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
-	analysisService := services.NewAnalysisService(mongoDb, logger)
+	analysisRepo := repositories.NewAnalysisRepository(mongoDb)
+
+	analysisService := services.NewAnalysisService(analysisRepo, logger)
 
 	analysisHandler := handlers.NewAnalysisHandler(&analysisService, logger)
 

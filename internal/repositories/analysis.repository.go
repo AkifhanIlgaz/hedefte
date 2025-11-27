@@ -162,8 +162,13 @@ func (r analysisRepository) FindExamsOfLesson(exam models.ExamType, userId strin
 			return nil, fmt.Errorf("lesson key '%s' not found", lesson)
 		}
 
+		if lessonRaw == nil {
+			return nil, fmt.Errorf("lessonRaw is nil for key '%s' in row: %+v", keyMap[lesson], row)
+		}
+
+		rawBytes, _ := bson.Marshal(lessonRaw)
 		var lessonAnalysis models.LessonAnalysis
-		if err := DecodeLesson(lessonRaw, &lessonAnalysis); err != nil {
+		if err := bson.Unmarshal(rawBytes, &lessonAnalysis); err != nil {
 			return nil, fmt.Errorf("decode error: %w", err)
 		}
 
@@ -252,34 +257,4 @@ func prepareFilterAndOptions(req models.ExamPaginationQuery) (bson.M, *options.F
 	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(req.RowsPerPage)).SetSort(bson.M{"date": -1})
 
 	return filter, opts
-}
-
-func DecodeLesson(raw any, out *models.LessonAnalysis) error {
-	switch v := raw.(type) {
-
-	case bson.Raw:
-		if err := bson.Unmarshal(v, out); err != nil {
-			return fmt.Errorf("failed to unmarshal bson.Raw: %w", err)
-		}
-		return nil
-
-	case bson.D:
-		if err := bson.Unmarshal([]byte(v.String()), out); err != nil {
-			return fmt.Errorf("failed to unmarshal bson.D: %w", err)
-		}
-		return nil
-
-	case bson.M:
-		doc := bson.D{}
-		for key, value := range v {
-			doc = append(doc, bson.E{Key: key, Value: value})
-		}
-		if err := bson.Unmarshal([]byte(doc.String()), out); err != nil {
-			return fmt.Errorf("failed to unmarshal bson.M: %w", err)
-		}
-		return nil
-
-	default:
-		return fmt.Errorf("unsupported BSON type: %T", raw)
-	}
 }
