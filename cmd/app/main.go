@@ -35,12 +35,16 @@ func main() {
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
 	analysisRepo := repositories.NewAnalysisRepository(mongoDb)
+	sessionRepo := repositories.NewSessionRepository(mongoDb)
 
 	analysisService := services.NewAnalysisService(analysisRepo, logger)
+	sessionService := services.NewSessionService(sessionRepo, logger)
 
 	analysisHandler := handlers.NewAnalysisHandler(&analysisService, logger)
+	sessionHandler := handlers.NewSessionHandler(&sessionService, logger)
 
 	analysisRouter := routers.NewAnalysisRouter(analysisHandler, *authMiddleware, logger)
+	sessionRouter := routers.NewSessionRouter(sessionHandler, *authMiddleware, logger)
 
 	server := gin.Default()
 
@@ -60,6 +64,7 @@ func main() {
 	})
 
 	analysisRouter.RegisterRoutes(api)
+	sessionRouter.RegisterRoutes(api)
 
 	err = server.Run(":8080")
 	if err != nil {
