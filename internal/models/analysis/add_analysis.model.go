@@ -2,8 +2,6 @@ package analysis
 
 import (
 	"time"
-
-	"github.com/AkifhanIlgaz/hedefte/internal/constants"
 )
 
 type AddTYTAnalysis struct {
@@ -22,8 +20,22 @@ type AddTYTAnalysis struct {
 	Biyoloji   LessonAnalysis `json:"Biyoloji" bson:"biyoloji" binding:"required" validate:"required"`
 }
 
-func (AddTYTAnalysis) CollectionName() string {
-	return constants.TytAnalysisCollection
+func (a AddTYTAnalysis) ToTytAnalysis() TYTAnalysis {
+	return TYTAnalysis{
+		UserId:     a.UserID,
+		Date:       a.Date,
+		Name:       a.Name,
+		TotalNet:   a.TotalNet,
+		Türkçe:     a.Türkçe,
+		Tarih:      a.Tarih,
+		Coğrafya:   a.Coğrafya,
+		Felsefe:    a.Felsefe,
+		DinKültürü: a.DinKültürü,
+		Matematik:  a.Matematik,
+		Fizik:      a.Fizik,
+		Kimya:      a.Kimya,
+		Biyoloji:   a.Biyoloji,
+	}
 }
 
 func (req *AddTYTAnalysis) CalculateNet() {
@@ -54,8 +66,20 @@ type AddAYTAnalysis struct {
 	Biyoloji  LessonAnalysis `json:"Biyoloji" bson:"biyoloji,omitempty"`
 }
 
-func (AddAYTAnalysis) CollectionName() string {
-	return constants.AytAnalysisCollection
+func (a AddAYTAnalysis) ToAytAnalysis() AYTAnalysis {
+	return AYTAnalysis{
+		UserId:    a.UserID,
+		Date:      a.Date,
+		Name:      a.Name,
+		TotalNet:  a.TotalNet,
+		Edebiyat:  a.Edebiyat,
+		Tarih:     a.Tarih,
+		Coğrafya:  a.Coğrafya,
+		Matematik: a.Matematik,
+		Fizik:     a.Fizik,
+		Kimya:     a.Kimya,
+		Biyoloji:  a.Biyoloji,
+	}
 }
 
 func (req *AddAYTAnalysis) CalculateNet() {

@@ -3,9 +3,13 @@ package analysis
 import (
 	"math"
 	"time"
+
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type AYTAnalysis struct {
+	Id        bson.ObjectID  `bson:"_id,omitempty"`
+	UserId    string         `json:"userId" bson:"user_id"`
 	Date      time.Time      `json:"date" bson:"date"`
 	Name      string         `json:"name" bson:"name"`
 	TotalNet  float64        `json:"totalNet" bson:"total_net"`

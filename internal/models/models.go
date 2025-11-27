@@ -11,6 +11,7 @@ type AytAnalysis = analysis.AYTAnalysis
 type AddAytAnalysis = analysis.AddAYTAnalysis
 
 type LessonAnalysis = analysis.LessonAnalysis
+type LessonSpecificAnalysis = analysis.LessonSpecificAnalysis
 type TopicMistake = analysis.TopicMistake
 
 // Chart Data types

@@ -128,7 +128,7 @@ func (h *AnalysisHandler) GetTytAnalysis(ctx *gin.Context) {
 
 	req.UserId = userId
 
-	analysis, metadata, err := h.analysisService.GetTytAnalysis(req)
+	analysis, metadata, err := h.analysisService.GetTytAnalyses(req)
 	if err != nil {
 		h.logger.Error("Failed to get TYT analysis", zap.Error(err))
 		response.Error(ctx, http.StatusInternalServerError, "failed to get TYT analysis")
@@ -166,7 +166,7 @@ func (h *AnalysisHandler) GetAytAnalysis(ctx *gin.Context) {
 
 	req.UserId = userId
 
-	analysis, metadata, err := h.analysisService.GetAytAnalysis(req)
+	analysis, metadata, err := h.analysisService.GetAytAnalyses(req)
 	if err != nil {
 		h.logger.Error("Failed to get AYT analysis", zap.Error(err))
 		response.Error(ctx, http.StatusInternalServerError, "failed to get AYT analysis")
@@ -218,7 +218,14 @@ func (h *AnalysisHandler) GetChartData(ctx *gin.Context) {
 func (h *AnalysisHandler) getChartDataByType(req models.ChartDataQuery) (any, error) {
 	switch req.ChartType {
 	case models.ChartTypeGeneral:
-		return h.analysisService.GetGeneralChartData(req)
+		switch req.ExamType {
+		case models.ExamTypeTYT:
+			return h.analysisService.GetTytGeneralChartData(req)
+		case models.ExamTypeAYT:
+			return h.analysisService.GetAytGeneralChartData(req)
+		default:
+			return nil, errors.New("invalid chart type")
+		}
 	case models.ChartTypeLessonSpecific:
 		return h.analysisService.GetLessonChartData(req)
 	default:
