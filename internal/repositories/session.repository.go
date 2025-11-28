@@ -12,7 +12,7 @@ import (
 
 type SessionRepository interface {
 	InsertSession(models.Session) (models.Session, error)
-	UpdateSession(models.Session) (models.Session, error)
+	UpdateSession(id bson.ObjectID, userId string, fieldsToUpdate map[string]interface{}) error
 	DeleteSession(id bson.ObjectID, userId string) error
 	FindSession(id bson.ObjectID, userId string) (models.Session, error)
 	FindAllSessionsOfDay(userId string, date time.Time) ([]models.Session, error)
@@ -43,16 +43,16 @@ func (r sessionRepository) InsertSession(session models.Session) (models.Session
 	return session, nil
 }
 
-func (r sessionRepository) UpdateSession(session models.Session) (models.Session, error) {
-	filter := bson.M{"_id": session.Id, "user_id": session.UserId}
-	update := bson.M{"$set": session}
+func (r sessionRepository) UpdateSession(id bson.ObjectID, userId string, fieldsToUpdate map[string]any) error {
+	filter := bson.M{"_id": id, "user_id": userId}
+	update := bson.M{"$set": fieldsToUpdate}
 
 	_, err := r.collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		return models.Session{}, fmt.Errorf("failed to update session: %w", err)
+		return fmt.Errorf("failed to update session: %w", err)
 	}
 
-	return session, nil
+	return nil
 }
 
 func (r sessionRepository) DeleteSession(id bson.ObjectID, userId string) error {

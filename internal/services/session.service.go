@@ -32,16 +32,6 @@ func (s SessionService) AddSession(req models.AddSessionRequest) (models.Session
 	return insertedSession, nil
 }
 
-func (s SessionService) UpdateSession(req models.UpdateSessionRequest) (models.Session, error) {
-	session := req.ToSession()
-	updatedSession, err := s.repo.UpdateSession(session)
-	if err != nil {
-		s.logger.Error("failed to update session", zap.Error(err))
-		return models.Session{}, fmt.Errorf(`failed to update session: %w`, err)
-	}
-	return updatedSession, nil
-}
-
 func (s SessionService) DeleteSession(id string, userId string) error {
 	sessionId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
@@ -66,20 +56,16 @@ func (s SessionService) GetSessionsOfDay(userId string, day time.Time) ([]models
 	return sessions, nil
 }
 
-func (s SessionService) ToggleCompletion(id string, userId string, isCompleted bool) (models.Session, error) {
+func (s SessionService) ToggleCompletion(id string, userId string, isCompleted bool) error {
 	sessionId, err := bson.ObjectIDFromHex(id)
 	if err != nil {
-		return models.Session{}, fmt.Errorf("invalid session ID: %w", err)
+		return fmt.Errorf("invalid session ID: %w", err)
 	}
-	session := models.Session{
-		Id:          sessionId,
-		UserId:      userId,
-		IsCompleted: isCompleted,
-	}
-	updatedSession, err := s.repo.UpdateSession(session)
+
+	err = s.repo.UpdateSession(sessionId, userId, bson.M{"is_completed": isCompleted})
 	if err != nil {
 		s.logger.Error("failed to update session", zap.Error(err))
-		return models.Session{}, fmt.Errorf(`failed to update session: %w`, err)
+		return fmt.Errorf(`failed to update session: %w`, err)
 	}
-	return updatedSession, nil
+	return nil
 }

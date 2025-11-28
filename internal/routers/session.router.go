@@ -27,8 +27,10 @@ func (r *SessionRouter) RegisterRoutes(router *gin.RouterGroup) {
 	sessionRoute.Use(r.authMiddleware.AccessToken())
 
 	sessionRoute.POST("", r.sessionHandler.AddSession)
-	sessionRoute.PUT("", r.sessionHandler.UpdateSession)
+
+	// sessionRoute.PUT("", r.sessionHandler.UpdateSession)
 	sessionRoute.DELETE("/:id", r.sessionHandler.DeleteSession)
+	sessionRoute.POST("/complete/:id", r.sessionHandler.ToggleCompletion)
 
 	sessionRoute.GET("/:day", r.sessionHandler.GetSessionsOfDay)
 }

@@ -64,44 +64,44 @@ func (h *SessionHandler) AddSession(ctx *gin.Context) {
 	response.Success(ctx, "Oturum başarıyla eklendi.", response.WithPayload(session))
 }
 
-// UpdateSession handles updating an existing session
-func (h *SessionHandler) UpdateSession(ctx *gin.Context) {
-	userID := ctx.GetString("userId")
-	if userID == "" {
-		h.logger.Warn("Yetkisiz erişim girişimi", zap.String("sebep", "userID boş"))
-		response.Error(ctx, http.StatusUnauthorized, "Giriş yapmadınız")
-		return
-	}
+// // UpdateSession handles updating an existing session
+// func (h *SessionHandler) UpdateSession(ctx *gin.Context) {
+// 	userID := ctx.GetString("userId")
+// 	if userID == "" {
+// 		h.logger.Warn("Yetkisiz erişim girişimi", zap.String("sebep", "userID boş"))
+// 		response.Error(ctx, http.StatusUnauthorized, "Giriş yapmadınız")
+// 		return
+// 	}
 
-	var req models.UpdateSessionRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		h.logger.Error("İstek verisi bağlanamadı", zap.Error(err))
-		response.Error(ctx, http.StatusBadRequest, "Geçersiz istek")
-		return
-	}
+// 	var req models.UpdateSessionRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		h.logger.Error("İstek verisi bağlanamadı", zap.Error(err))
+// 		response.Error(ctx, http.StatusBadRequest, "Geçersiz istek")
+// 		return
+// 	}
 
-	validate := validator.New()
-	if err := validate.Struct(&req); err != nil {
-		var validationErrors validator.ValidationErrors
-		if errors.As(err, &validationErrors) {
-			response.Error(ctx, http.StatusBadRequest, "Doğrulama hatası", response.WithValidationErrors(validationErrors))
-			return
-		}
-		response.Error(ctx, http.StatusBadRequest, err.Error())
-		return
-	}
+// 	validate := validator.New()
+// 	if err := validate.Struct(&req); err != nil {
+// 		var validationErrors validator.ValidationErrors
+// 		if errors.As(err, &validationErrors) {
+// 			response.Error(ctx, http.StatusBadRequest, "Doğrulama hatası", response.WithValidationErrors(validationErrors))
+// 			return
+// 		}
+// 		response.Error(ctx, http.StatusBadRequest, err.Error())
+// 		return
+// 	}
 
-	req.UserId = userID
+// 	req.UserId = userID
 
-	session, err := h.sessionService.UpdateSession(req)
-	if err != nil {
-		h.logger.Error("Oturum güncellenemedi", zap.Error(err))
-		response.Error(ctx, http.StatusInternalServerError, "Oturum güncellenemedi, lütfen tekrar deneyin")
-		return
-	}
+// 	session, err := h.sessionService.UpdateSession(req)
+// 	if err != nil {
+// 		h.logger.Error("Oturum güncellenemedi", zap.Error(err))
+// 		response.Error(ctx, http.StatusInternalServerError, "Oturum güncellenemedi, lütfen tekrar deneyin")
+// 		return
+// 	}
 
-	response.Success(ctx, "Oturum başarıyla güncellendi.", response.WithPayload(session))
-}
+// 	response.Success(ctx, "Oturum başarıyla güncellendi.", response.WithPayload(session))
+// }
 
 // DeleteSession handles deleting a session
 func (h *SessionHandler) DeleteSession(ctx *gin.Context) {
@@ -183,12 +183,12 @@ func (h *SessionHandler) ToggleCompletion(ctx *gin.Context) {
 		return
 	}
 
-	session, err := h.sessionService.ToggleCompletion(id, userID, req.IsCompleted)
+	err := h.sessionService.ToggleCompletion(id, userID, req.IsCompleted)
 	if err != nil {
 		h.logger.Error("Tamamlanma durumu değiştirilemedi", zap.Error(err))
 		response.Error(ctx, http.StatusInternalServerError, "Tamamlanma durumu değiştirilemedi, lütfen tekrar deneyin")
 		return
 	}
 
-	response.Success(ctx, "Tamamlanma durumu başarıyla değiştirildi.", response.WithPayload(session))
+	response.Success(ctx, "Tamamlanma durumu başarıyla değiştirildi.")
 }

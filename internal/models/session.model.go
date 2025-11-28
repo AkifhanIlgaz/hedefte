@@ -32,7 +32,7 @@ type AddSessionRequest struct {
 }
 
 type UpdateSessionRequest struct {
-	Id          bson.ObjectID `json:"-"`
+	Id          bson.ObjectID `json:"id"`
 	UserId      string        `json:"-"`
 	Exam        ExamType      `json:"exam"`
 	Type        string        `json:"type"`
