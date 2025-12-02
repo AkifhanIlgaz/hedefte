@@ -12,7 +12,7 @@ import (
 
 type SessionRepository interface {
 	InsertSession(models.Session) (models.Session, error)
-	UpdateSession(id bson.ObjectID, userId string, fieldsToUpdate map[string]interface{}) error
+	UpdateSession(id bson.ObjectID, userId string, newSession models.Session) error
 	DeleteSession(id bson.ObjectID, userId string) error
 	FindSession(id bson.ObjectID, userId string) (models.Session, error)
 	FindAllSessionsOfDay(userId string, date time.Time) ([]models.Session, error)
@@ -43,9 +43,9 @@ func (r sessionRepository) InsertSession(session models.Session) (models.Session
 	return session, nil
 }
 
-func (r sessionRepository) UpdateSession(id bson.ObjectID, userId string, fieldsToUpdate map[string]any) error {
+func (r sessionRepository) UpdateSession(id bson.ObjectID, userId string, newSession models.Session) error {
 	filter := bson.M{"_id": id, "user_id": userId}
-	update := bson.M{"$set": fieldsToUpdate}
+	update := bson.M{"$set": newSession}
 
 	_, err := r.collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {

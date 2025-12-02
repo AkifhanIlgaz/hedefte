@@ -56,13 +56,8 @@ func (s SessionService) GetSessionsOfDay(userId string, day time.Time) ([]models
 	return sessions, nil
 }
 
-func (s SessionService) ToggleCompletion(id string, userId string, isCompleted bool) error {
-	sessionId, err := bson.ObjectIDFromHex(id)
-	if err != nil {
-		return fmt.Errorf("invalid session ID: %w", err)
-	}
-
-	err = s.repo.UpdateSession(sessionId, userId, bson.M{"is_completed": isCompleted})
+func (s SessionService) UpdateSession(req models.UpdateSessionRequest) error {
+	err := s.repo.UpdateSession(req.Id, req.UserId, req.ToSession())
 	if err != nil {
 		s.logger.Error("failed to update session", zap.Error(err))
 		return fmt.Errorf(`failed to update session: %w`, err)

@@ -15,6 +15,7 @@ type Session struct {
 	Topic       string        `json:"topic" bson:"topic"`
 	Goal        string        `json:"goal" bson:"goal"`
 	Date        time.Time     `json:"date" bson:"date"`
+	Notes       string        `json:"notes" bson:"notes"`
 	Duration    time.Duration `json:"duration" bson:"duration"`
 	IsCompleted bool          `json:"isCompleted" bson:"is_completed"`
 }
@@ -41,7 +42,15 @@ type UpdateSessionRequest struct {
 	Goal        string        `json:"goal"`
 	Date        time.Time     `json:"date"`
 	Duration    time.Duration `json:"duration"`
+	Notes       string        `json:"notes" bson:"notes"`
 	IsCompleted bool          `json:"isCompleted"`
+}
+
+type CompleteSessionRequest struct {
+	Id       bson.ObjectID `json:"id"`
+	UserId   string        `json:"-"`
+	Duration time.Duration `json:"duration"`
+	Notes    string        `json:"notes" bson:"notes"`
 }
 
 func (req AddSessionRequest) ToSession() Session {
@@ -69,6 +78,7 @@ func (req UpdateSessionRequest) ToSession() Session {
 		Goal:        req.Goal,
 		Date:        req.Date,
 		Duration:    req.Duration,
+		Notes:       req.Notes,
 		IsCompleted: req.IsCompleted,
 	}
 }
