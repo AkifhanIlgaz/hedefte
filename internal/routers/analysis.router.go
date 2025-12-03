@@ -32,4 +32,5 @@ func (r *AnalysisRouter) RegisterRoutes(router *gin.RouterGroup) {
 	analysisRoute.GET("/tyt", r.analysisHandler.GetTytAnalysis)
 
 	analysisRoute.POST("/ayt", r.analysisHandler.AddAYTAnalysis)
+	analysisRoute.GET("/ayt", r.analysisHandler.GetAytAnalysis)
 }
