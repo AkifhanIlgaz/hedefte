@@ -10,7 +10,6 @@ import (
 	"runtime"
 
 	"github.com/google/generative-ai-go/genai"
-	"github.com/joho/godotenv"
 	"google.golang.org/api/option"
 )
 
@@ -21,10 +20,6 @@ type SoruAnalizi struct {
 }
 
 func main() {
-	// 1. API Anahtarını Çevresel Değişkenlerden Al
-	godotenv.Load()
-Fatal("GEMINI_API_KEY bulunamadı")
-	}
 
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))

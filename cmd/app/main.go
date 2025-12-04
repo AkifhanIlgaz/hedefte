@@ -34,16 +34,16 @@ func main() {
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
-	analysisRepo := repositories.NewAnalysisRepository(mongoDb)
+	tytRepo := repositories.NewTYTRepository(mongoDb)
 	sessionRepo := repositories.NewSessionRepository(mongoDb)
 
-	analysisService := services.NewAnalysisService(analysisRepo, logger)
+	tytService := services.NewTYTService(tytRepo, logger)
 	sessionService := services.NewSessionService(sessionRepo, logger)
 
-	analysisHandler := handlers.NewAnalysisHandler(&analysisService, logger)
+	tytHandler := handlers.NewTYTHandler(&tytService, logger)
 	sessionHandler := handlers.NewSessionHandler(&sessionService, logger)
 
-	analysisRouter := routers.NewAnalysisRouter(analysisHandler, *authMiddleware, logger)
+	tytRouter := routers.NewTYTRouter(tytHandler, *authMiddleware, logger)
 	sessionRouter := routers.NewSessionRouter(sessionHandler, *authMiddleware, logger)
 
 	server := gin.Default()
@@ -63,7 +63,7 @@ func main() {
 		})
 	})
 
-	analysisRouter.RegisterRoutes(api)
+	tytRouter.RegisterRoutes(api)
 	sessionRouter.RegisterRoutes(api)
 
 	err = server.Run(":8080")

@@ -1,11 +1,12 @@
 package models
 
-import "github.com/AkifhanIlgaz/hedefte/internal/models/analysis"
+import (
+	"github.com/AkifhanIlgaz/hedefte/internal/models/analysis"
+)
 
 type Analysis = analysis.Analysis
 
 type TytAnalysis = analysis.TYTAnalysis
-type AddTytAnalysis = analysis.AddTYTAnalysis
 
 type AytAnalysis = analysis.AYTAnalysis
 type AddAytAnalysis = analysis.AddAYTAnalysis

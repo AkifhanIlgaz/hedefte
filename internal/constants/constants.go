@@ -3,11 +3,13 @@ package constants
 type ExamType string
 
 const (
-	TYT ExamType = "tyt"
-	AYT ExamType = "ayt"
+	TYT     ExamType = "TYT"
+	AYT_SAY ExamType = "AYT_SAY"
+	AYT_EA  ExamType = "AYT_EA"
 )
 
 const (
-	TytAnalysisCollection = "tyt_analysis"
-	AytAnalysisCollection = "ayt_analysis"
+	TytExamsCollection    = "tyt_exams"
+	AytSayExamsCollection = "ayt_say_exams"
+	AytEaExamsCollection  = "ayt_ea_exams"
 )
