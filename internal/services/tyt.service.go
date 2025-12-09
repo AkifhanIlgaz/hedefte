@@ -24,14 +24,14 @@ func NewTYTService(repo repositories.TYTRepository, logger *zap.Logger) TYTServi
 	}
 }
 
-func (s TYTService) AddExam(req tyt_models.AddExamRequest) error {
+func (s TYTService) AddExam(req tyt_models.AddExamRequest) (bson.ObjectID, error) {
 	exam := req.ToExam()
-	err := s.repo.InsertExam(exam)
+	id, err := s.repo.InsertExam(exam)
 	if err != nil {
 		s.logger.Error("failed to insert tyt exam", zap.Error(err))
-		return fmt.Errorf("tyt service insert exam: %w", err)
+		return bson.ObjectID{}, fmt.Errorf("tyt service insert exam: %w", err)
 	}
-	return nil
+	return id, nil
 }
 
 func (s TYTService) DeleteExam(id string, userId string) error {
@@ -58,14 +58,14 @@ func (s TYTService) GetExams(req models.ExamPaginationQuery) ([]tyt_models.Exam,
 	return exams, meta, err
 }
 
-func (s TYTService) GetGeneralChart(userId string, timeInterval int) (tyt_models.GeneralChartData, error) {
+func (s TYTService) GetGeneralChart(userId string, timeInterval int) (models.GeneralChartData, error) {
 	exams, err := s.repo.FindExamsByUserId(userId, GetStart(timeInterval).UTC(), time.Now().UTC())
 	if err != nil {
 		s.logger.Error("failed to get tyt exams", zap.Error(err))
-		return tyt_models.GeneralChartData{}, fmt.Errorf(`failed to get tyt exams: %w`, err)
+		return models.GeneralChartData{}, fmt.Errorf(`failed to get tyt exams: %w`, err)
 	}
 
-	chartData := tyt_models.GeneralChartData{}
+	chartData := models.NewGeneralChartData()
 	for _, exam := range exams {
 		exam.ApplyExamToGeneralChartData(&chartData)
 	}

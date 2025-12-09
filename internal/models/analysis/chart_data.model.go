@@ -33,17 +33,15 @@ type LessonGeneralChartData struct {
 }
 
 type LessonSpecificChartData struct {
-	ExamCount     int                `json:"examCount"`
-	AverageNet    float64            `json:"averageNet"`
-	AverageTime   int                `json:"averageTime"`
-	MaxNet        float64            `json:"maxNet"`
-	Exams         []GeneralChartExam `json:"exams"`
-	TopicMistakes map[string]int     `json:"topicMistakes"`
+	ExamCount   int                `json:"examCount"`
+	AverageNet  float64            `json:"averageNet"`
+	AverageTime int                `json:"averageTime"`
+	MaxNet      float64            `json:"maxNet"`
+	Exams       []GeneralChartExam `json:"exams"`
 }
 
 func NewLessonSpecificChartData() LessonSpecificChartData {
 	return LessonSpecificChartData{
-		Exams:         []GeneralChartExam{},
-		TopicMistakes: map[string]int{},
+		Exams: []GeneralChartExam{},
 	}
 }

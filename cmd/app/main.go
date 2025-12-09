@@ -35,12 +35,14 @@ func main() {
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
 	tytRepo := repositories.NewTYTRepository(mongoDb)
+	topicMistakesRepo := repositories.NewTopicMistakeRepository(mongoDb)
 	sessionRepo := repositories.NewSessionRepository(mongoDb)
 
 	tytService := services.NewTYTService(tytRepo, logger)
 	sessionService := services.NewSessionService(sessionRepo, logger)
+	topicMistakesService := services.NewTopicMistakeService(topicMistakesRepo, logger)
 
-	tytHandler := handlers.NewTYTHandler(&tytService, logger)
+	tytHandler := handlers.NewTYTHandler(&tytService, topicMistakesService, logger)
 	sessionHandler := handlers.NewSessionHandler(&sessionService, logger)
 
 	tytRouter := routers.NewTYTRouter(tytHandler, *authMiddleware, logger)

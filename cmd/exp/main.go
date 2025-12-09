@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -33,7 +35,14 @@ func main() {
 	model.ResponseMIMEType = "application/json" // Gemini'yi JSON dönmeye zorlar
 
 	// 3. Resmi Yükle (Gerçek senaryoda bu HTTP request'ten gelen []byte olacak)
-	imgData, err := os.ReadFile("./turkce.jpeg")
+	imgURL := "https://example.com/path/to/turkce.jpeg"
+	imgResp, err := http.Get(imgURL)
+	if err != nil {
+		log.Fatal("Resim indirilemedi:", err)
+	}
+	defer imgResp.Body.Close()
+
+	imgData, err := io.ReadAll(imgResp.Body)
 	if err != nil {
 		log.Fatal("Resim okunamadı:", err)
 	}

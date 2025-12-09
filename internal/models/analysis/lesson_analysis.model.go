@@ -34,9 +34,6 @@ func (a LessonSpecificAnalysis) ApplyToLessonSpecificChartData(chartData *Lesson
 		Name:     a.Name,
 		TotalNet: a.LessonAnalysis.Net,
 	})
-	for _, topicMistake := range a.LessonAnalysis.TopicMistakes {
-		chartData.TopicMistakes[topicMistake.TopicName] += topicMistake.MistakeCount
-	}
 
 	chartData.ExamCount++
 }

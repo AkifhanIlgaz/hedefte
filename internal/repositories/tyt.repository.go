@@ -15,7 +15,7 @@ import (
 )
 
 type TYTRepository interface {
-	InsertExam(exam tyt_models.Exam) error
+	InsertExam(exam tyt_models.Exam) (bson.ObjectID, error)
 	DeleteExam(examId bson.ObjectID, userId string) error
 	UpdateExam(exam tyt_models.Exam) error
 	FindExamsWithPagination(models.ExamPaginationQuery) ([]tyt_models.Exam, response.Meta, error)
@@ -40,11 +40,13 @@ func NewTYTRepository(db *mongo.Database) TYTRepository {
 	}
 }
 
-func (r tytRepository) InsertExam(exam tyt_models.Exam) error {
-	if _, err := r.examsCollection.InsertOne(context.Background(), exam); err != nil {
-		return fmt.Errorf("failed to insert tyt exam: %w", err)
+func (r tytRepository) InsertExam(exam tyt_models.Exam) (bson.ObjectID, error) {
+	res, err := r.examsCollection.InsertOne(context.Background(), exam)
+	if err != nil {
+		return bson.ObjectID{}, fmt.Errorf("failed to insert tyt exam: %w", err)
 	}
-	return nil
+
+	return res.InsertedID.(bson.ObjectID), nil
 }
 
 func (r tytRepository) UpdateExam(exam tyt_models.Exam) error {

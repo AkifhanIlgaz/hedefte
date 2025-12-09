@@ -13,3 +13,7 @@ const (
 	AytSayExamsCollection = "ayt_say_exams"
 	AytEaExamsCollection  = "ayt_ea_exams"
 )
+
+const (
+	TopicMistakesCollection = "topic_mistakes"
+)

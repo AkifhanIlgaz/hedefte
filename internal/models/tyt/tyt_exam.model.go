@@ -25,8 +25,8 @@ type Exam struct {
 	Biyoloji   models.LessonAnalysis `json:"Biyoloji" bson:"biyoloji"`
 }
 
-func (e Exam) ApplyExamToGeneralChartData(chartData *GeneralChartData) {
-	exam := GeneralChartExam{
+func (e Exam) ApplyExamToGeneralChartData(chartData *models.GeneralChartData) {
+	exam := models.GeneralChartExam{
 		TotalNet: e.TotalNet,
 		Date:     e.Date,
 		Name:     e.Name,
@@ -36,24 +36,27 @@ func (e Exam) ApplyExamToGeneralChartData(chartData *GeneralChartData) {
 	chartData.AverageNet = calculateAverage(chartData.AverageNet, e.TotalNet, float64(chartData.ExamCount))
 	chartData.Exams = append(chartData.Exams, exam)
 
-	ApplyLessonAnalysisToGeneralChartData(e.Türkçe, &chartData.Türkçe, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.Tarih, &chartData.Tarih, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.Coğrafya, &chartData.Coğrafya, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.Felsefe, &chartData.Felsefe, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.DinKültürü, &chartData.DinKültürü, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.Matematik, &chartData.Matematik, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.Fizik, &chartData.Fizik, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.Kimya, &chartData.Kimya, chartData.ExamCount)
-	ApplyLessonAnalysisToGeneralChartData(e.Biyoloji, &chartData.Biyoloji, chartData.ExamCount)
+	ApplyLessonAnalysisToGeneralChartData("Türkçe", e.Türkçe, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Tarih", e.Tarih, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Coğrafya", e.Coğrafya, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Felsefe", e.Felsefe, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Din Kültürü", e.DinKültürü, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Matematik", e.Matematik, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Fizik", e.Fizik, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Kimya", e.Kimya, chartData)
+	ApplyLessonAnalysisToGeneralChartData("Biyoloji", e.Biyoloji, chartData)
 
 	chartData.ExamCount++
 }
 
-func ApplyLessonAnalysisToGeneralChartData(lessonAnalysis models.LessonAnalysis, lessonData *models.LessonGeneralChartData, examCount int) {
-	lessonData.MaxNet = math.Max(lessonData.MaxNet, lessonAnalysis.Net)
-	lessonData.AverageTime = calculateAverage(lessonData.AverageTime, lessonAnalysis.Time, examCount)
-	lessonData.AverageNet = calculateAverage(lessonData.AverageNet, lessonAnalysis.Net, float64(examCount))
+func ApplyLessonAnalysisToGeneralChartData(lessonName string, lessonAnalysis models.LessonAnalysis, chartData *models.GeneralChartData) {
+	lessonData := chartData.Lessons[lessonName]
 
+	lessonData.MaxNet = math.Max(lessonData.MaxNet, lessonAnalysis.Net)
+	lessonData.AverageTime = (lessonData.AverageTime*(chartData.ExamCount) + lessonAnalysis.Time) / (chartData.ExamCount + 1)
+	lessonData.AverageNet = (lessonData.AverageNet*float64(chartData.ExamCount) + lessonAnalysis.Net) / float64(chartData.ExamCount+1)
+
+	chartData.Lessons[lessonName] = lessonData
 }
 
 func calculateAverage[T int | float64](oldAverage, newValue, itemCount T) T {

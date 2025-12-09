@@ -15,14 +15,16 @@ import (
 )
 
 type TYTHandler struct {
-	service *services.TYTService
-	logger  *zap.Logger
+	service             *services.TYTService
+	topicMistakeService *services.TopicMistakeService
+	logger              *zap.Logger
 }
 
-func NewTYTHandler(tytService *services.TYTService, logger *zap.Logger) *TYTHandler {
+func NewTYTHandler(tytService *services.TYTService, topicMistakeService *services.TopicMistakeService, logger *zap.Logger) *TYTHandler {
 	return &TYTHandler{
-		service: tytService,
-		logger:  logger,
+		service:             tytService,
+		topicMistakeService: topicMistakeService,
+		logger:              logger,
 	}
 }
 
@@ -54,10 +56,17 @@ func (h *TYTHandler) AddExam(c *gin.Context) {
 
 	req.UserID = userID
 
-	err := h.service.AddExam(req)
+	examId, err := h.service.AddExam(req)
 	if err != nil {
 		h.logger.Error("Failed to add TYT analysis", zap.Error(err))
 		response.Error(c, http.StatusInternalServerError, "failed to add TYT analysis")
+		return
+	}
+
+	err = h.topicMistakeService.AddTopicMistakes(req, examId)
+	if err != nil {
+		h.logger.Error("Failed to add topic mistakes", zap.Error(err))
+		response.Error(c, http.StatusInternalServerError, "failed to add topic mistakes")
 		return
 	}
 
