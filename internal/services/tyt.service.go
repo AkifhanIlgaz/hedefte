@@ -73,6 +73,21 @@ func (s TYTService) GetGeneralChart(userId string, timeInterval int) (models.Gen
 	return chartData, nil
 }
 
+func (s TYTService) GetLessonSpecificChart(userId string, lesson string, timeInterval int) (models.LessonSpecificChartData, error) {
+	exams, err := s.repo.FindExamsOfLesson(userId, lesson, GetStart(timeInterval).UTC(), time.Now().UTC())
+	if err != nil {
+		s.logger.Error("failed to get tyt exams", zap.Error(err))
+		return models.LessonSpecificChartData{}, fmt.Errorf(`failed to get tyt exams: %w`, err)
+	}
+
+	chartData := models.NewLessonSpecificChartData()
+	for _, exam := range exams {
+		exam.ApplyToLessonSpecificChartData(&chartData)
+	}
+
+	return chartData, nil
+}
+
 func GetStart(timeInterval int) time.Time {
 	switch timeInterval {
 	case 1:

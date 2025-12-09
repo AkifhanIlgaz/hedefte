@@ -11,7 +11,7 @@ type LessonAnalysis struct {
 	Empty         int            `json:"empty" bson:"empty" binding:"min=0"`
 	Time          int            `json:"time" bson:"time" `
 	Net           float64        `json:"net" bson:"net"`
-	TopicMistakes []TopicMistake `json:"topicMistakes" bson:"topic_mistakes"`
+	TopicMistakes []TopicMistake `json:"topicMistakes" bson:"-"`
 }
 
 func (req *LessonAnalysis) CalculateNet() {

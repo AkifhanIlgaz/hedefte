@@ -21,7 +21,20 @@ type TYTRepository interface {
 	FindExamsWithPagination(models.ExamPaginationQuery) ([]tyt_models.Exam, response.Meta, error)
 	FindExamsByUserId(userId string, start time.Time, end time.Time) ([]tyt_models.Exam, error)
 
-	FindExamsOfLesson(exam models.ExamType, userId string, lesson string, start time.Time, end time.Time) ([]models.LessonSpecificAnalysis, error)
+	FindExamsOfLesson(userId string, lesson string, start time.Time, end time.Time) ([]models.LessonSpecificAnalysis, error)
+}
+
+var keyMap = map[string]string{
+	"edebiyat":    "edebiyat",
+	"türkçe":      "turkce",
+	"tarih":       "tarih",
+	"coğrafya":    "cografya",
+	"felsefe":     "felsefe",
+	"din kültürü": "din_kulturu",
+	"matematik":   "matematik",
+	"fizik":       "fizik",
+	"kimya":       "kimya",
+	"biyoloji":    "biyoloji",
 }
 
 type tytRepository struct {
@@ -119,65 +132,76 @@ func (r tytRepository) FindExamsByUserId(userId string, start time.Time, end tim
 	return exams, nil
 }
 
-func (r tytRepository) FindExamsOfLesson(exam models.ExamType, userId string, lesson string, start time.Time, end time.Time) ([]models.LessonSpecificAnalysis, error) {
-	// collection := r.db.Collection(constants.TytAnalysisCollection)
-	// if exam == models.ExamTypeAYT {
-	// 	collection = r.db.Collection(constants.AytAnalysisCollection)
-	// }
+func (r tytRepository) FindExamsOfLesson(userId string, lesson string, start time.Time, end time.Time) ([]models.LessonSpecificAnalysis, error) {
+	filter := bson.M{
+		"user_id": userId,
+		"date": bson.M{
+			"$gte": start,
+			"$lte": end,
+		},
+	}
 
-	// filter := bson.M{
-	// 	"userId": userId,
-	// 	"date": bson.M{
-	// 		"$gte": start,
-	// 		"$lte": end,
-	// 	},
-	// }
+	projection := bson.M{
+		"date":         1,
+		"name":         1,
+		keyMap[lesson]: 1,
+		"_id":          0,
+	}
 
-	// projection := bson.M{
-	// 	"date":         1,
-	// 	"name":         1,
-	// 	keyMap[lesson]: 1,
-	// 	"_id":          0,
-	// }
+	opts := options.Find().SetSort(bson.M{"date": 1}).SetProjection(projection)
 
-	// opts := options.Find().SetSort(bson.M{"date": 1}).SetProjection(projection)
+	cursor, err := r.examsCollection.Find(context.Background(), filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.Background())
 
-	// cursor, err := collection.Find(context.Background(), filter, opts)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	analyses := []models.LessonSpecificAnalysis{}
 
-	// analyses := []models.LessonSpecificAnalysis{}
+	for cursor.Next(context.Background()) {
+		var row map[string]any
 
-	// for cursor.Next(context.Background()) {
-	// 	var row lessonChartRow
+		if err := cursor.Decode(&row); err != nil {
+			return nil, fmt.Errorf("decode error: %w", err)
+		}
 
-	// 	if err := cursor.Decode(&row); err != nil {
-	// 		return nil, fmt.Errorf("decode error: %w", err)
-	// 	}
-	// 	lessonRaw, ok := row.Raw[keyMap[lesson]]
-	// 	if !ok {
-	// 		return nil, fmt.Errorf("lesson key '%s' not found", lesson)
-	// 	}
+		date, ok := row["date"].(bson.DateTime)
+		if !ok {
+			return nil, fmt.Errorf("invalid date format")
+		}
 
-	// 	if lessonRaw == nil {
-	// 		return nil, fmt.Errorf("lessonRaw is nil for key '%s' in row: %+v", keyMap[lesson], row)
-	// 	}
+		name, ok := row["name"].(string)
+		if !ok {
+			return nil, fmt.Errorf("invalid name format")
+		}
 
-	// 	rawBytes, _ := bson.Marshal(lessonRaw)
-	// 	var lessonAnalysis models.LessonAnalysis
-	// 	if err := bson.Unmarshal(rawBytes, &lessonAnalysis); err != nil {
-	// 		return nil, fmt.Errorf("decode error: %w", err)
-	// 	}
+		lessonRaw, ok := row[keyMap[lesson]]
+		if !ok {
+			return nil, fmt.Errorf("lesson data not found")
+		}
 
-	// 	analyses = append(analyses, models.LessonSpecificAnalysis{
-	// 		Date:           row.Date,
-	// 		Name:           row.Name,
-	// 		LessonAnalysis: lessonAnalysis,
-	// 	})
-	// }
+		var lessonAnalysis models.LessonAnalysis
+		switch v := lessonRaw.(type) {
+		case models.LessonAnalysis:
+			lessonAnalysis = v
+		default:
+			rawBytes, err := bson.Marshal(v)
+			if err != nil {
+				return nil, fmt.Errorf("invalid data format: %w", err)
+			}
+			if err := bson.Unmarshal(rawBytes, &lessonAnalysis); err != nil {
+				return nil, fmt.Errorf("invalid data format: %w", err)
+			}
+		}
 
-	return nil, nil
+		analyses = append(analyses, models.LessonSpecificAnalysis{
+			Date:           date.Time(),
+			Name:           name,
+			LessonAnalysis: lessonAnalysis,
+		})
+	}
+
+	return analyses, nil
 }
 
 func prepareFilterAndOptions(req models.ExamPaginationQuery) (bson.M, *options.FindOptionsBuilder) {

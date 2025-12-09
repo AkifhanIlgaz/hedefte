@@ -19,19 +19,6 @@ package repositories
 // 	Raw  bson.M    `bson:",inline"` // tüm alanları topla
 // }
 
-// var keyMap = map[string]string{
-// 	"edebiyat":    "edebiyat",
-// 	"türkçe":      "turkce",
-// 	"tarih":       "tarih",
-// 	"coğrafya":    "cografya",
-// 	"felsefe":     "felsefe",
-// 	"din kültürü": "din_kulturu",
-// 	"matematik":   "matematik",
-// 	"fizik":       "fizik",
-// 	"kimya":       "kimya",
-// 	"biyoloji":    "biyoloji",
-// }
-
 // type AnalysisRepository interface {
 // 	InsertTytAnalysis(analysis models.TytAnalysis) error
 // 	InsertAytAnalysis(analysis models.AytAnalysis) error
@@ -116,67 +103,6 @@ package repositories
 // 	var analyses []models.TytAnalysis
 // 	if err := cursor.All(context.Background(), &analyses); err != nil {
 // 		return []models.TytAnalysis{}, fmt.Errorf(`failed to get tyt analyses: %w`, err)
-// 	}
-
-// 	return analyses, nil
-// }
-
-// func (r analysisRepository) FindExamsOfLesson(exam models.ExamType, userId string, lesson string, start time.Time, end time.Time) ([]models.LessonSpecificAnalysis, error) {
-// 	collection := r.db.Collection(constants.TytAnalysisCollection)
-// 	if exam == models.ExamTypeAYT {
-// 		collection = r.db.Collection(constants.AytAnalysisCollection)
-// 	}
-
-// 	filter := bson.M{
-// 		"userId": userId,
-// 		"date": bson.M{
-// 			"$gte": start,
-// 			"$lte": end,
-// 		},
-// 	}
-
-// 	projection := bson.M{
-// 		"date":         1,
-// 		"name":         1,
-// 		keyMap[lesson]: 1,
-// 		"_id":          0,
-// 	}
-
-// 	opts := options.Find().SetSort(bson.M{"date": 1}).SetProjection(projection)
-
-// 	cursor, err := collection.Find(context.Background(), filter, opts)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	analyses := []models.LessonSpecificAnalysis{}
-
-// 	for cursor.Next(context.Background()) {
-// 		var row lessonChartRow
-
-// 		if err := cursor.Decode(&row); err != nil {
-// 			return nil, fmt.Errorf("decode error: %w", err)
-// 		}
-// 		lessonRaw, ok := row.Raw[keyMap[lesson]]
-// 		if !ok {
-// 			return nil, fmt.Errorf("lesson key '%s' not found", lesson)
-// 		}
-
-// 		if lessonRaw == nil {
-// 			return nil, fmt.Errorf("lessonRaw is nil for key '%s' in row: %+v", keyMap[lesson], row)
-// 		}
-
-// 		rawBytes, _ := bson.Marshal(lessonRaw)
-// 		var lessonAnalysis models.LessonAnalysis
-// 		if err := bson.Unmarshal(rawBytes, &lessonAnalysis); err != nil {
-// 			return nil, fmt.Errorf("decode error: %w", err)
-// 		}
-
-// 		analyses = append(analyses, models.LessonSpecificAnalysis{
-// 			Date:           row.Date,
-// 			Name:           row.Name,
-// 			LessonAnalysis: lessonAnalysis,
-// 		})
 // 	}
 
 // 	return analyses, nil

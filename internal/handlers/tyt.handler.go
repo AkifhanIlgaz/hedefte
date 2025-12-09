@@ -157,5 +157,28 @@ func (h *TYTHandler) GetGeneralChart(c *gin.Context) {
 }
 
 func (h *TYTHandler) GetLessonChart(c *gin.Context) {
-	// Implement the logic to add a new TYT analysis
+	userId := c.GetString("userId")
+	if userId == "" {
+		h.logger.Warn("Unauthorized access attempt", zap.String("reason", "userID is empty"))
+		response.Error(c, http.StatusUnauthorized, "you are not logged in")
+		return
+	}
+
+	timeInterval, err := strconv.Atoi(c.Query("timeInterval"))
+	if err != nil {
+		h.logger.Warn("Invalid request", zap.String("reason", "timeInterval is empty"))
+		response.Error(c, http.StatusBadRequest, "timeInterval is required")
+		return
+	}
+
+	lesson := c.Query("lesson")
+
+	data, err := h.service.GetLessonSpecificChart(userId, lesson, timeInterval)
+	if err != nil {
+		h.logger.Error("Failed to get TYT lesson chart", zap.Error(err))
+		response.Error(c, http.StatusInternalServerError, "failed to get TYT lesson chart")
+		return
+	}
+
+	response.Success(c, "TYT analizi başarıyla alındı.", response.WithPayload(data))
 }

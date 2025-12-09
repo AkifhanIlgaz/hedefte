@@ -33,6 +33,10 @@ func (s *TopicMistakeService) AddTopicMistakes(request tyt_models.AddExamRequest
 	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Kimya", request.Kimya.TopicMistakes)
 	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Biyoloji", request.Biyoloji.TopicMistakes)
 
+	if len(topicMistakes) == 0 {
+		return nil
+	}
+
 	return s.topicMistakeRepository.InsertBulk(topicMistakes)
 }
 
