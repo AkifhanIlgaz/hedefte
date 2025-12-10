@@ -27,6 +27,7 @@ func (r *TYTRouter) RegisterRoutes(router *gin.RouterGroup) {
 
 	analysisRoute.GET("/charts/general", r.tytHandler.GetGeneralChart)
 	analysisRoute.GET("/charts/lesson", r.tytHandler.GetLessonChart)
+	analysisRoute.GET("/topic-mistakes", r.tytHandler.GetTopicMistakesOfLesson)
 
 	analysisRoute.POST("/exams", r.tytHandler.AddExam)
 	analysisRoute.GET("/exams", r.tytHandler.GetExams)

@@ -1,11 +1,14 @@
 package analysis
 
 import (
+	"time"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type TopicMistake struct {
 	Id        bson.ObjectID `json:"id" bson:"_id,omitempty"`
+	Date      time.Time     `json:"date" bson:"date" `
 	ExamId    bson.ObjectID `json:"examId" bson:"exam_id" `
 	UserId    string        `json:"userId" bson:"user_id" `
 	ExamType  string        `json:"examType" bson:"exam_type" `

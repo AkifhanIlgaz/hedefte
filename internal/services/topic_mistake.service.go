@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/AkifhanIlgaz/hedefte/internal/models"
 	tyt_models "github.com/AkifhanIlgaz/hedefte/internal/models/tyt"
 	"github.com/AkifhanIlgaz/hedefte/internal/repositories"
@@ -38,6 +40,13 @@ func (s *TopicMistakeService) AddTopicMistakes(request tyt_models.AddExamRequest
 	}
 
 	return s.topicMistakeRepository.InsertBulk(topicMistakes)
+}
+
+func (s *TopicMistakeService) FindAllByLesson(userId string, examType string, lesson string, timeInterval int) ([]models.TopicMistake, error) {
+	startTime := GetStart(timeInterval).UTC()
+	endTime := time.Now().UTC()
+
+	return s.topicMistakeRepository.FindAllByLesson(userId, examType, lesson, startTime, endTime)
 }
 
 func addToArray(userId string, examId bson.ObjectID, arr []models.TopicMistake, lessonName string, val []models.TopicMistake) []models.TopicMistake {
