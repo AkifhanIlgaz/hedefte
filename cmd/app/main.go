@@ -34,18 +34,19 @@ func main() {
 	tokenManager := token.NewManager()
 	authMiddleware := middlewares.NewAuthMiddleware(&tokenManager)
 
-	tytRepo := repositories.NewTYTRepository(mongoDb)
 	topicMistakesRepo := repositories.NewTopicMistakeRepository(mongoDb)
+	examRepo := repositories.NewExamRepository(mongoDb)
+	analyticsRepo := repositories.NewAnalyticsRepository(mongoDb)
 	sessionRepo := repositories.NewSessionRepository(mongoDb)
 
-	tytService := services.NewTYTService(tytRepo, logger)
 	sessionService := services.NewSessionService(sessionRepo, logger)
+	examService := services.NewExamService(examRepo, analyticsRepo, logger)
 	topicMistakesService := services.NewTopicMistakeService(topicMistakesRepo, logger)
 
-	tytHandler := handlers.NewTYTHandler(&tytService, topicMistakesService, logger)
+	examHandler := handlers.NewExamHandler(examService, topicMistakesService, logger)
 	sessionHandler := handlers.NewSessionHandler(&sessionService, logger)
 
-	tytRouter := routers.NewTYTRouter(tytHandler, *authMiddleware, logger)
+	examRouter := routers.NewExamRouter(examHandler, *authMiddleware, logger)
 	sessionRouter := routers.NewSessionRouter(sessionHandler, *authMiddleware, logger)
 
 	server := gin.Default()
@@ -65,7 +66,7 @@ func main() {
 		})
 	})
 
-	tytRouter.RegisterRoutes(api)
+	examRouter.RegisterRoutes(api)
 	sessionRouter.RegisterRoutes(api)
 
 	err = server.Run(":8080")

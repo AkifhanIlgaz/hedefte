@@ -1,10 +1,7 @@
 package services
 
 import (
-	"time"
-
 	"github.com/AkifhanIlgaz/hedefte/internal/models"
-	tyt_models "github.com/AkifhanIlgaz/hedefte/internal/models/tyt"
 	"github.com/AkifhanIlgaz/hedefte/internal/repositories"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.uber.org/zap"
@@ -22,40 +19,15 @@ func NewTopicMistakeService(topicMistakeRepository repositories.TopicMistakeRepo
 	}
 }
 
-func (s *TopicMistakeService) AddTopicMistakes(request tyt_models.AddExamRequest, examId bson.ObjectID) error {
-	topicMistakes := []models.TopicMistake{}
-
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Türkçe", request.Türkçe.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Tarih", request.Tarih.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Coğrafya", request.Coğrafya.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Felsefe", request.Felsefe.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "DinKültürü", request.DinKültürü.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Matematik", request.Matematik.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Fizik", request.Fizik.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Kimya", request.Kimya.TopicMistakes)
-	topicMistakes = addToArray(request.UserID, examId, topicMistakes, "Biyoloji", request.Biyoloji.TopicMistakes)
-
-	if len(topicMistakes) == 0 {
+func (s *TopicMistakeService) AddTopicMistakes(examId bson.ObjectID, userId string, request []models.ExamRequestTopicMistake) error {
+	if len(request) == 0 {
 		return nil
 	}
 
-	return s.topicMistakeRepository.InsertBulk(topicMistakes)
-}
-
-func (s *TopicMistakeService) FindAllByLesson(userId string, examType string, lesson string, timeInterval int) ([]models.TopicMistake, error) {
-	startTime := GetStart(timeInterval).UTC()
-	endTime := time.Now().UTC()
-
-	return s.topicMistakeRepository.FindAllByLesson(userId, examType, lesson, startTime, endTime)
-}
-
-func addToArray(userId string, examId bson.ObjectID, arr []models.TopicMistake, lessonName string, val []models.TopicMistake) []models.TopicMistake {
-	for _, v := range val {
-		v.ExamType = "TYT"
-		v.Lesson = lessonName
-		v.UserId = userId
-		v.ExamId = examId
-		arr = append(arr, v)
+	topicMistakes := make([]models.TopicMistake, len(request))
+	for i, req := range request {
+		topicMistakes[i] = req.ToTopicMistake(userId)
 	}
-	return arr
+
+	return s.topicMistakeRepository.InsertBulk(topicMistakes)
 }

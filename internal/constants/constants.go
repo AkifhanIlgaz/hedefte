@@ -8,6 +8,10 @@ const (
 	AYT_EA  ExamType = "AYT_EA"
 )
 
+const ExamsCollection = "exams"
+
+const AnalyticsCollection = "analytics"
+
 const (
 	TytExamsCollection    = "tyt_exams"
 	AytSayExamsCollection = "ayt_say_exams"
