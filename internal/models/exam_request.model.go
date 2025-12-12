@@ -69,7 +69,7 @@ func (req ExamRequestLesson) ToLesson() Lesson {
 type ExamRequestTopicMistake struct {
 	Date     time.Time `json:"date"`
 	ExamType string    `json:"examType"`
-	ExamId   string    `json:"examId"`
+	ExamId   string    `json:"-"`
 	Lesson   string    `json:"lesson"`
 	Topic    string    `json:"topic"`
 	IsSolved bool      `json:"isSolved"`

@@ -35,22 +35,27 @@ func (r analyticsRepository) UpsertExamAnalytics(analytics models.UpsertExamAnal
 	}
 
 	update := mongo.Pipeline{
-		{{Key: "$setOnInsert", Value: bson.M{
-			"_id":            bson.NewObjectID(),
-			"user_id":        analytics.UserId,
-			"exam_type":      analytics.ExamType,
-			"type":           "exam",
-			"exam_count":     0,
-			"max_result":     analytics.Result,
-			"average_result": 0,
-			"result_series":  bson.A{},
+		// 1️⃣ Default alanları garanti altına al
+		{{Key: "$set", Value: bson.M{
+			"user_id":   analytics.UserId,
+			"exam_type": analytics.ExamType,
+			"type":      "exam",
+
+			"exam_count":     bson.M{"$ifNull": bson.A{"$exam_count", 0}},
+			"max_result":     bson.M{"$ifNull": bson.A{"$max_result", analytics.Result}},
+			"average_result": bson.M{"$ifNull": bson.A{"$average_result", 0}},
+			"result_series":  bson.M{"$ifNull": bson.A{"$result_series", bson.A{}}},
 		}}},
 
+		// 2️⃣ new_exam_count hesapla
 		{{Key: "$set", Value: bson.M{
-			"exam_count": bson.M{"$add": bson.A{"$exam_count", 1}},
+			"new_exam_count": bson.M{"$add": bson.A{"$exam_count", 1}},
 		}}},
 
+		// 3️⃣ Metrics güncelle
 		{{Key: "$set", Value: bson.M{
+			"exam_count": "$new_exam_count",
+
 			"max_result": bson.M{
 				"$cond": bson.M{
 					"if":   bson.M{"$gt": bson.A{analytics.Result, "$max_result"}},
@@ -58,29 +63,43 @@ func (r analyticsRepository) UpsertExamAnalytics(analytics models.UpsertExamAnal
 					"else": "$max_result",
 				},
 			},
-		}}},
 
-		{{Key: "$set", Value: bson.M{
 			"average_result": bson.M{
 				"$divide": bson.A{
 					bson.M{
 						"$add": bson.A{
-							bson.M{"$multiply": bson.A{"$average_result", bson.M{"$subtract": bson.A{"$exam_count", 1}}}},
+							bson.M{
+								"$multiply": bson.A{
+									"$average_result",
+									bson.M{"$subtract": bson.A{"$new_exam_count", 1}},
+								},
+							},
 							analytics.Result,
 						},
 					},
-					"$exam_count",
+					"$new_exam_count",
 				},
 			},
 		}}},
 
-		{{Key: "$push", Value: bson.M{
+		// 4️⃣ result_series append (pipeline uyumlu)
+		{{Key: "$set", Value: bson.M{
 			"result_series": bson.M{
-				"date":   analytics.Date,
-				"name":   analytics.Name,
-				"result": analytics.Result,
+				"$concatArrays": bson.A{
+					"$result_series",
+					bson.A{
+						bson.M{
+							"date":   analytics.Date,
+							"name":   analytics.Name,
+							"result": analytics.Result,
+						},
+					},
+				},
 			},
 		}}},
+
+		// 5️⃣ temp field temizle
+		{{Key: "$unset", Value: "new_exam_count"}},
 	}
 	opts := options.UpdateOne().SetUpsert(true)
 
@@ -98,24 +117,25 @@ func (r analyticsRepository) UpsertLessonAnalytics(analytics models.UpsertLesson
 	}
 
 	update := mongo.Pipeline{
-		{{Key: "$setOnInsert", Value: bson.M{
-			"_id":            bson.NewObjectID(),
-			"user_id":        analytics.UserId,
-			"exam_type":      analytics.ExamType,
-			"type":           "lesson",
-			"lesson":         analytics.Lesson,
-			"exam_count":     0,
-			"max_result":     analytics.Result,
-			"average_result": 0,
-			"average_time":   0,
-			"result_series":  bson.A{},
+		{{Key: "$set", Value: bson.M{
+			"user_id":   analytics.UserId,
+			"exam_type": analytics.ExamType,
+			"type":      "lesson",
+			"lesson":    analytics.Lesson,
+
+			"exam_count":     bson.M{"$ifNull": bson.A{"$exam_count", 0}},
+			"max_result":     bson.M{"$ifNull": bson.A{"$max_result", analytics.Result}},
+			"average_result": bson.M{"$ifNull": bson.A{"$average_result", 0}},
+			"average_time":   bson.M{"$ifNull": bson.A{"$average_time", 0}},
+			"result_series":  bson.M{"$ifNull": bson.A{"$result_series", bson.A{}}},
 		}}},
 
 		{{Key: "$set", Value: bson.M{
-			"exam_count": bson.M{"$add": bson.A{"$exam_count", 1}},
+			"new_exam_count": bson.M{"$add": bson.A{"$exam_count", 1}},
 		}}},
-
 		{{Key: "$set", Value: bson.M{
+			"exam_count": "$new_exam_count",
+
 			"max_result": bson.M{
 				"$cond": bson.M{
 					"if":   bson.M{"$gt": bson.A{analytics.Result, "$max_result"}},
@@ -123,44 +143,60 @@ func (r analyticsRepository) UpsertLessonAnalytics(analytics models.UpsertLesson
 					"else": "$max_result",
 				},
 			},
-		}}},
 
-		{{Key: "$set", Value: bson.M{
 			"average_result": bson.M{
 				"$divide": bson.A{
 					bson.M{
 						"$add": bson.A{
-							bson.M{"$multiply": bson.A{"$average_result", bson.M{"$subtract": bson.A{"$exam_count", 1}}}},
+							bson.M{
+								"$multiply": bson.A{
+									"$average_result",
+									bson.M{"$subtract": bson.A{"$new_exam_count", 1}},
+								},
+							},
 							analytics.Result,
 						},
 					},
-					"$exam_count",
+					"$new_exam_count",
+				},
+			},
+
+			"average_time": bson.M{
+				"$divide": bson.A{
+					bson.M{
+						"$add": bson.A{
+							bson.M{
+								"$multiply": bson.A{
+									"$average_time",
+									bson.M{"$subtract": bson.A{"$new_exam_count", 1}},
+								},
+							},
+							analytics.Time,
+						},
+					},
+					"$new_exam_count",
 				},
 			},
 		}}},
 
 		{{Key: "$set", Value: bson.M{
-			"average_time": bson.M{
-				"$divide": bson.A{
-					bson.M{
-						"$add": bson.A{
-							bson.M{"$multiply": bson.A{"$average_time", bson.M{"$subtract": bson.A{"$exam_count", 1}}}},
-							analytics.Time,
+			"result_series": bson.M{
+				"$concatArrays": bson.A{
+					"$result_series",
+					bson.A{
+						bson.M{
+							"date":   analytics.Date,
+							"name":   analytics.Name,
+							"result": analytics.Result,
+							"time":   analytics.Time,
 						},
 					},
-					"$exam_count",
 				},
 			},
 		}}},
 
-		{{Key: "$push", Value: bson.M{
-			"result_series": bson.M{
-				"date":   analytics.Date,
-				"name":   analytics.Name,
-				"result": analytics.Result,
-				"time":   analytics.Time,
-			},
-		}}},
+		// 5️⃣ temp field temizle
+		{{Key: "$unset", Value: "new_exam_count"}},
 	}
 	opts := options.UpdateOne().SetUpsert(true)
 
@@ -178,7 +214,7 @@ func (r analyticsRepository) DeleteExamAnalytics(analytics models.DeleteExamAnal
 
 	update := mongo.Pipeline{
 
-		// 1) Verilen exam'ı result_series'ten çıkar
+		// 1️⃣ İlgili exam'ı result_series'ten çıkar
 		{{Key: "$set", Value: bson.M{
 			"result_series": bson.M{
 				"$filter": bson.M{
@@ -189,37 +225,45 @@ func (r analyticsRepository) DeleteExamAnalytics(analytics models.DeleteExamAnal
 			},
 		}}},
 
-		// 2) Exam count'ı yeniden hesapla
+		// 2️⃣ result değerlerini flat array'e çıkar
 		{{Key: "$set", Value: bson.M{
-			"exam_count": bson.M{"$size": "$result_series"},
-		}}},
-
-		// 3) max_result yeniden hesapla
-		{{Key: "$set", Value: bson.M{
-			"max_result": bson.M{
-				"$cond": bson.M{
-					"if":   bson.M{"$gt": bson.A{bson.M{"$size": "$result_series"}, 0}},
-					"then": bson.M{"$max": "$result_series.result"},
-					"else": 0,
+			"result_values": bson.M{
+				"$map": bson.M{
+					"input": "$result_series",
+					"as":    "item",
+					"in":    "$$item.result",
 				},
 			},
 		}}},
 
-		// 4) average_result yeniden hesapla
+		// 3️⃣ exam_count, max_result, average_result hesapla
 		{{Key: "$set", Value: bson.M{
+			"exam_count": bson.M{"$size": "$result_values"},
+
+			"max_result": bson.M{
+				"$cond": bson.M{
+					"if":   bson.M{"$gt": bson.A{bson.M{"$size": "$result_values"}, 0}},
+					"then": bson.M{"$max": "$result_values"},
+					"else": 0,
+				},
+			},
+
 			"average_result": bson.M{
 				"$cond": bson.M{
-					"if": bson.M{"$gt": bson.A{bson.M{"$size": "$result_series"}, 0}},
+					"if": bson.M{"$gt": bson.A{bson.M{"$size": "$result_values"}, 0}},
 					"then": bson.M{
 						"$divide": bson.A{
-							bson.M{"$sum": "$result_series.result"},
-							bson.M{"$size": "$result_series"},
+							bson.M{"$sum": "$result_values"},
+							bson.M{"$size": "$result_values"},
 						},
 					},
 					"else": 0,
 				},
 			},
 		}}},
+
+		// 4️⃣ temp field temizle
+		{{Key: "$unset", Value: "result_values"}},
 	}
 
 	_, err := r.collection.UpdateOne(context.TODO(), filter, update)
@@ -237,7 +281,7 @@ func (r analyticsRepository) DeleteLessonAnalytics(analytics models.DeleteLesson
 
 	update := mongo.Pipeline{
 
-		// 1) Verilen exam'ı result_series'ten çıkar
+		// 1️⃣ Exam'i result_series'ten çıkar
 		{{Key: "$set", Value: bson.M{
 			"result_series": bson.M{
 				"$filter": bson.M{
@@ -248,31 +292,56 @@ func (r analyticsRepository) DeleteLessonAnalytics(analytics models.DeleteLesson
 			},
 		}}},
 
-		// 2) Exam count'ı yeniden hesapla
+		// 2️⃣ result ve time değerlerini ayrı array’lere çıkar
 		{{Key: "$set", Value: bson.M{
-			"exam_count": bson.M{"$size": "$result_series"},
+			"result_values": bson.M{
+				"$map": bson.M{
+					"input": "$result_series",
+					"as":    "item",
+					"in":    "$$item.result",
+				},
+			},
+			"time_values": bson.M{
+				"$map": bson.M{
+					"input": "$result_series",
+					"as":    "item",
+					"in":    "$$item.time",
+				},
+			},
 		}}},
 
-		// 3) max_result yeniden hesapla
+		// 3️⃣ exam_count, max, average hesapla
 		{{Key: "$set", Value: bson.M{
+			"exam_count": bson.M{"$size": "$result_values"},
+
 			"max_result": bson.M{
 				"$cond": bson.M{
-					"if":   bson.M{"$gt": bson.A{bson.M{"$size": "$result_series"}, 0}},
-					"then": bson.M{"$max": "$result_series.result"},
+					"if":   bson.M{"$gt": bson.A{bson.M{"$size": "$result_values"}, 0}},
+					"then": bson.M{"$max": "$result_values"},
 					"else": 0,
 				},
 			},
-		}}},
 
-		// 4) average_result yeniden hesapla
-		{{Key: "$set", Value: bson.M{
 			"average_result": bson.M{
 				"$cond": bson.M{
-					"if": bson.M{"$gt": bson.A{bson.M{"$size": "$result_series"}, 0}},
+					"if": bson.M{"$gt": bson.A{bson.M{"$size": "$result_values"}, 0}},
 					"then": bson.M{
 						"$divide": bson.A{
-							bson.M{"$sum": "$result_series.result"},
-							bson.M{"$size": "$result_series"},
+							bson.M{"$sum": "$result_values"},
+							bson.M{"$size": "$result_values"},
+						},
+					},
+					"else": 0,
+				},
+			},
+
+			"average_time": bson.M{
+				"$cond": bson.M{
+					"if": bson.M{"$gt": bson.A{bson.M{"$size": "$time_values"}, 0}},
+					"then": bson.M{
+						"$divide": bson.A{
+							bson.M{"$sum": "$time_values"},
+							bson.M{"$size": "$time_values"},
 						},
 					},
 					"else": 0,
@@ -280,19 +349,10 @@ func (r analyticsRepository) DeleteLessonAnalytics(analytics models.DeleteLesson
 			},
 		}}},
 
-		{{Key: "$set", Value: bson.M{
-			"average_time": bson.M{
-				"$cond": bson.M{
-					"if": bson.M{"$gt": bson.A{bson.M{"$size": "$result_series"}, 0}},
-					"then": bson.M{
-						"$divide": bson.A{
-							bson.M{"$sum": "$result_series.time"},
-							bson.M{"$size": "$result_series"},
-						},
-					},
-					"else": 0,
-				},
-			},
+		// 4️⃣ Temp field'leri temizle
+		{{Key: "$unset", Value: bson.A{
+			"result_values",
+			"time_values",
 		}}},
 	}
 

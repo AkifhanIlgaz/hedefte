@@ -68,4 +68,5 @@ func (h *ExamHandler) AddExam(ctx *gin.Context) {
 		return
 	}
 
+	response.Success(ctx, "Deneme başarıyla eklendi")
 }
