@@ -23,11 +23,6 @@ func NewAuthMiddleware(tokenManager *token.Manager) *AuthMiddleware {
 
 func (m *AuthMiddleware) AccessToken() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.GetHeader("zozak") == "zozak" {
-			c.Set("uid", "test-user-id")
-			c.Next()
-			return
-		}
 
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -50,7 +45,11 @@ func (m *AuthMiddleware) AccessToken() gin.HandlerFunc {
 		claims, err := m.tokenManager.VerifySupabaseJWT(token)
 		if err != nil {
 			response.Error(c, http.StatusUnauthorized, err.Error(), response.WithAbort(c))
+			return
+		}
 
+		if claims["sub"] == "" {
+			response.Error(c, http.StatusUnauthorized, "you are not logged in")
 			return
 		}
 

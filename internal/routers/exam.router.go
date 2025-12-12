@@ -26,8 +26,8 @@ func (r *ExamRouter) RegisterRoutes(router *gin.RouterGroup) {
 	analysisRoute.Use(r.authMiddleware.AccessToken())
 
 	analysisRoute.POST("", r.examHandler.AddExam)
-	analysisRoute.GET("")
-	analysisRoute.DELETE("/:id")
+	analysisRoute.GET("", r.examHandler.GetExams)
+	analysisRoute.DELETE("/:id", r.examHandler.DeleteExam)
 
 	analysisRoute.GET("/charts/general")
 	analysisRoute.GET("/charts/lesson")

@@ -7,7 +7,7 @@ import (
 type ExamPaginationQuery struct {
 	UserId       string `json:"-"`
 	Page         int    `form:"page"`
-	RowsPerPage  int    `form:"rowsPerPage"`
+	Limit        int    `form:"limit"`
 	TimeInterval int    `form:"timeInterval"`
 }
 

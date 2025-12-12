@@ -2,35 +2,23 @@ package repositories
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"time"
 
 	"github.com/AkifhanIlgaz/hedefte/internal/constants"
 	"github.com/AkifhanIlgaz/hedefte/internal/models"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type ExamRepository interface {
 	Insert(exam models.Exam) (bson.ObjectID, error)
 	Delete(examId bson.ObjectID, userId string) error
 	Update(exam models.Exam) error
-	// FindExamsWithPagination(models.ExamPaginationQuery) ([]tyt_models.Exam, response.Meta, error)
-	// FindExamsByUserId(userId string, start time.Time, end time.Time) ([]tyt_models.Exam, error)
-
-	// FindExamsOfLesson(userId string, lesson string, start time.Time, end time.Time) ([]models.LessonSpecificAnalysis, error)
-}
-
-var ma = map[string]string{
-	"edebiyat":    "edebiyat",
-	"türkçe":      "turkce",
-	"tarih":       "tarih",
-	"coğrafya":    "cografya",
-	"felsefe":     "felsefe",
-	"din kültürü": "din_kulturu",
-	"matematik":   "matematik",
-	"fizik":       "fizik",
-	"kimya":       "kimya",
-	"biyoloji":    "biyoloji",
+	FindExams(userId string, examType string, page int, limit int, start time.Time, end time.Time) ([]models.Exam, error)
+	FindById(examId bson.ObjectID, userId string) (models.Exam, error)
 }
 
 type examRepository struct {
@@ -77,4 +65,49 @@ func (r examRepository) Delete(examId bson.ObjectID, userId string) error {
 	}
 
 	return nil
+}
+
+func (r examRepository) FindExams(userId string, examType string, page int, limit int, start time.Time, end time.Time) ([]models.Exam, error) {
+	filter := bson.M{
+		"user_id":   userId,
+		"exam_type": examType,
+		"date": bson.M{
+			"$gte": start,
+			"$lte": end,
+		},
+	}
+
+	skip := int64((page - 1) * limit)
+	sort := bson.M{"date": 1}
+	opts := options.Find().SetSkip(skip).SetLimit(int64(limit)).SetSort(sort)
+
+	cursor, err := r.collection.Find(context.Background(), filter, opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find exams: %w", err)
+	}
+	defer cursor.Close(context.Background())
+
+	var exams []models.Exam
+	if err := cursor.All(context.Background(), &exams); err != nil {
+		return nil, fmt.Errorf("failed to decode exams: %w", err)
+	}
+
+	return exams, nil
+}
+
+func (r examRepository) FindById(examId bson.ObjectID, userId string) (models.Exam, error) {
+	filter := bson.M{
+		"_id":     examId,
+		"user_id": userId,
+	}
+
+	var exam models.Exam
+	if err := r.collection.FindOne(context.Background(), filter).Decode(&exam); err != nil {
+		if err == mongo.ErrNoDocuments {
+			return models.Exam{}, errors.New(`no exam found`)
+		}
+		return models.Exam{}, fmt.Errorf("failed to find exam: %w", err)
+	}
+
+	return exam, nil
 }

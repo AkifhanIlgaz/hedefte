@@ -17,14 +17,47 @@ type Exam struct {
 	Lessons  []Lesson      `bson:"lessons"`
 }
 
-func (e Exam) ToExamAnalyticsUpsert() UpsertExamAnalytics {
+func (e Exam) ToExamResponse() ExamResponse {
+	lessons := make([]LessonResponse, len(e.Lessons))
+	for i, lesson := range e.Lessons {
+		lessons[i] = lesson.ToLessonResponse()
+	}
+
+	return ExamResponse{
+		Id:      e.Id.Hex(),
+		Date:    e.Date,
+		Name:    e.Name,
+		Result:  e.Result,
+		Lessons: lessons,
+	}
+}
+
+func (e Exam) ToUpsertExamAnalytics() UpsertExamAnalytics {
 	return UpsertExamAnalytics{
+		ExamId:   e.Id,
 		UserId:   e.UserId,
 		ExamType: e.ExamType,
 		Date:     e.Date,
 		Name:     e.Name,
 		Result:   e.Result,
 	}
+}
+
+func (e Exam) ToDeleteExamAnalytics() DeleteExamAnalytics {
+	return DeleteExamAnalytics{
+		ExamId:   e.Id,
+		UserId:   e.UserId,
+		ExamType: e.ExamType,
+		Result:   e.Result,
+	}
+}
+
+func (e Exam) ToDeleteLessonAnalytics() []DeleteLessonAnalytics {
+	deleteLessonAnalytics := make([]DeleteLessonAnalytics, len(e.Lessons))
+	for i, lesson := range e.Lessons {
+		deleteLessonAnalytics[i] = lesson.ToDeleteLessonAnalytics(e.UserId, e.ExamType, e.Id, e.Date)
+	}
+	return deleteLessonAnalytics
 }
 
 func (e Exam) Collection() string {
@@ -40,11 +73,35 @@ type Lesson struct {
 	Result  float64 `bson:"result"`
 }
 
-func (l Lesson) ToLessonAnalyticsUpsert(userId, examType string, date time.Time) UpsertLessonAnalytics {
+func (l Lesson) ToLessonResponse() LessonResponse {
+	return LessonResponse{
+		Name:    l.Name,
+		Correct: l.Correct,
+		Wrong:   l.Wrong,
+		Empty:   l.Empty,
+		Time:    l.Time,
+		Result:  l.Result,
+	}
+}
+
+func (l Lesson) ToUpsertLessonAnalytics(userId, examType string, examName string, examId bson.ObjectID, date time.Time) UpsertLessonAnalytics {
 	return UpsertLessonAnalytics{
+		ExamId:   examId,
 		UserId:   userId,
 		ExamType: examType,
 		Date:     date,
+		Name:     examName,
+		Result:   l.Result,
+		Lesson:   l.Name,
+		Time:     l.Time,
+	}
+}
+
+func (l Lesson) ToDeleteLessonAnalytics(userId, examType string, examId bson.ObjectID, date time.Time) DeleteLessonAnalytics {
+	return DeleteLessonAnalytics{
+		ExamId:   examId,
+		UserId:   userId,
+		ExamType: examType,
 		Result:   l.Result,
 		Lesson:   l.Name,
 		Time:     l.Time,
@@ -82,19 +139,19 @@ func (e ExamAnalytics) Collection() string {
 }
 
 type UpsertExamAnalytics struct {
-	Date     time.Time `bson:"date"`
-	Name     string    `bson:"name"`
-	UserId   string    `bson:"user_id"`
-	ExamType string    `bson:"exam_type"`
-	Result   float64   `bson:"result"`
+	ExamId   bson.ObjectID `bson:"exam_id"`
+	Date     time.Time     `bson:"date"`
+	Name     string        `bson:"name"`
+	UserId   string        `bson:"user_id"`
+	ExamType string        `bson:"exam_type"`
+	Result   float64       `bson:"result"`
 }
 
 type DeleteExamAnalytics struct {
-	Date     time.Time `bson:"date"`
-	Name     string    `bson:"name"`
-	UserId   string    `bson:"user_id"`
-	ExamType string    `bson:"exam_type"`
-	Result   float64   `bson:"result"`
+	ExamId   bson.ObjectID `bson:"exam_id"`
+	UserId   string        `bson:"user_id"`
+	ExamType string        `bson:"exam_type"`
+	Result   float64       `bson:"result"`
 }
 
 type LessonAnalytics struct {
@@ -110,28 +167,29 @@ type LessonAnalytics struct {
 }
 
 type UpsertLessonAnalytics struct {
-	Date     time.Time `bson:"date"`
-	Name     string    `bson:"name"`
-	UserId   string    `bson:"user_id"`
-	ExamType string    `bson:"exam_type"`
-	Lesson   string    `bson:"lesson"`
-	Time     int       `bson:"time"`
-	Result   float64   `bson:"result"`
+	ExamId   bson.ObjectID `bson:"exam_id"`
+	Date     time.Time     `bson:"date"`
+	Name     string        `bson:"name"`
+	UserId   string        `bson:"user_id"`
+	ExamType string        `bson:"exam_type"`
+	Lesson   string        `bson:"lesson"`
+	Time     int           `bson:"time"`
+	Result   float64       `bson:"result"`
 }
 
 type DeleteLessonAnalytics struct {
-	Date     time.Time `bson:"date"`
-	Name     string    `bson:"name"`
-	UserId   string    `bson:"user_id"`
-	ExamType string    `bson:"exam_type"`
-	Lesson   string    `bson:"lesson"`
-	Time     int       `bson:"time"`
-	Result   float64   `bson:"result"`
+	ExamId   bson.ObjectID `bson:"exam_id"`
+	UserId   string        `bson:"user_id"`
+	ExamType string        `bson:"exam_type"`
+	Lesson   string        `bson:"lesson"`
+	Time     int           `bson:"time"`
+	Result   float64       `bson:"result"`
 }
 
 type ResultSeries struct {
-	Date   time.Time `bson:"date"`
-	Name   string    `bson:"name"`
-	Result float64   `bson:"result"`
-	Time   int       `bson:"time,omitempty"`
+	ExamId bson.ObjectID `bson:"exam_id"`
+	Date   time.Time     `bson:"date"`
+	Name   string        `bson:"name"`
+	Result float64       `bson:"result"`
+	Time   int           `bson:"time,omitempty"`
 }

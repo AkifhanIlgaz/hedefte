@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/AkifhanIlgaz/hedefte/internal/constants"
 	"github.com/AkifhanIlgaz/hedefte/internal/models"
@@ -13,6 +14,8 @@ import (
 type AnalyticsRepository interface {
 	UpsertExamAnalytics(analytics models.UpsertExamAnalytics) error
 	UpsertLessonAnalytics(analytics models.UpsertLessonAnalytics) error
+	DeleteLessonAnalytics(analytics models.DeleteLessonAnalytics) error
+	DeleteExamAnalytics(analytics models.DeleteExamAnalytics) error
 }
 
 type analyticsRepository struct {
@@ -89,9 +92,10 @@ func (r analyticsRepository) UpsertExamAnalytics(analytics models.UpsertExamAnal
 					"$result_series",
 					bson.A{
 						bson.M{
-							"date":   analytics.Date,
-							"name":   analytics.Name,
-							"result": analytics.Result,
+							"exam_id": analytics.ExamId,
+							"date":    analytics.Date,
+							"name":    analytics.Name,
+							"result":  analytics.Result,
 						},
 					},
 				},
@@ -185,10 +189,11 @@ func (r analyticsRepository) UpsertLessonAnalytics(analytics models.UpsertLesson
 					"$result_series",
 					bson.A{
 						bson.M{
-							"date":   analytics.Date,
-							"name":   analytics.Name,
-							"result": analytics.Result,
-							"time":   analytics.Time,
+							"exam_id": analytics.ExamId,
+							"date":    analytics.Date,
+							"name":    analytics.Name,
+							"result":  analytics.Result,
+							"time":    analytics.Time,
 						},
 					},
 				},
@@ -209,7 +214,6 @@ func (r analyticsRepository) DeleteExamAnalytics(analytics models.DeleteExamAnal
 		"user_id":   analytics.UserId,
 		"exam_type": analytics.ExamType,
 		"type":      "exam",
-		"name":      analytics.Name,
 	}
 
 	update := mongo.Pipeline{
@@ -220,7 +224,7 @@ func (r analyticsRepository) DeleteExamAnalytics(analytics models.DeleteExamAnal
 				"$filter": bson.M{
 					"input": "$result_series",
 					"as":    "item",
-					"cond":  bson.M{"$ne": bson.A{"$$item.name", analytics.Name}},
+					"cond":  bson.M{"$ne": bson.A{"$$item.exam_id", analytics.ExamId}},
 				},
 			},
 		}}},
@@ -275,9 +279,10 @@ func (r analyticsRepository) DeleteLessonAnalytics(analytics models.DeleteLesson
 		"user_id":   analytics.UserId,
 		"exam_type": analytics.ExamType,
 		"type":      "lesson",
-		"name":      analytics.Name,
 		"lesson":    analytics.Lesson,
 	}
+
+	fmt.Println(filter)
 
 	update := mongo.Pipeline{
 
@@ -287,7 +292,7 @@ func (r analyticsRepository) DeleteLessonAnalytics(analytics models.DeleteLesson
 				"$filter": bson.M{
 					"input": "$result_series",
 					"as":    "item",
-					"cond":  bson.M{"$ne": bson.A{"$$item.name", analytics.Name}},
+					"cond":  bson.M{"$ne": bson.A{"$$item.exam_id", analytics.ExamId}},
 				},
 			},
 		}}},

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -33,15 +32,15 @@ func main() {
 	logger := logger.NewLogger()
 	defer logger.Sync()
 
-	tytRepo := repositories.NewTYTRepository(mongoDb)
-	tytService := services.NewTYTService(tytRepo, logger)
+	examRepo := repositories.NewExamRepository(mongoDb)
+	analyticsRepo := repositories.NewAnalyticsRepository(mongoDb)
 
-	data, err := tytService.GetLessonSpecificChart("313cd965-c44c-4db8-97d5-f3544779a085", "türkçe", -1)
+	examService := services.NewExamService(examRepo, analyticsRepo, logger)
+
+	err = examService.DeleteExam("693c165a6d0c882d6b07c78c", "313cd965-c44c-4db8-97d5-f3544779a085")
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(data)
 
 	// ctx := context.Background()
 	// client, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))

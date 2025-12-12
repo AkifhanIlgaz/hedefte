@@ -93,3 +93,28 @@ func (req ExamRequestTopicMistake) ToTopicMistake(userId string) TopicMistake {
 		ImageUrl: req.ImageUrl,
 	}
 }
+
+type GetExamsRequest struct {
+	UserId       string `form:"-"`
+	Exam         string `form:"exam"`
+	Page         int    `form:"page"`
+	RowsPerPage  int    `form:"rowsPerPage"`
+	TimeInterval int    `form:"timeInterval"`
+}
+
+func (p GetExamsRequest) Start() time.Time {
+	switch p.TimeInterval {
+	case 1:
+		return time.Now().AddDate(0, -1, 0)
+	case 3:
+		return time.Now().AddDate(0, -3, 0)
+	case 6:
+		return time.Now().AddDate(0, -6, 0)
+	default:
+		return time.Now().AddDate(-2, 0, 0)
+	}
+}
+
+func (p GetExamsRequest) End() time.Time {
+	return time.Now()
+}
