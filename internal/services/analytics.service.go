@@ -44,6 +44,9 @@ func (s AnalyticsService) GetExamAnalytics(exam string, userId string, timeInter
 	}
 
 	sumResult := 0.0
+	if len(resultSeries) == 0 {
+		return examAnalytics, nil
+	}
 	for _, resultSerie := range resultSeries {
 		sumResult += resultSerie.Result
 		examAnalytics.MaxResult = max(examAnalytics.MaxResult, resultSerie.Result)
@@ -77,6 +80,9 @@ func (s AnalyticsService) GetLessonAnalytics(exam string, lesson string, userId 
 
 	sumResult := 0.0
 	sumTime := 0
+	if len(resultSeries) == 0 {
+		return lessonAnalytics, nil
+	}
 	for _, resultSerie := range resultSeries {
 		sumResult += resultSerie.Result
 		sumTime += resultSerie.Time
