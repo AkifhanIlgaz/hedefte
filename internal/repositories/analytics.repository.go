@@ -3,6 +3,7 @@ package repositories
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/AkifhanIlgaz/hedefte/internal/constants"
 	"github.com/AkifhanIlgaz/hedefte/internal/models"
@@ -16,6 +17,10 @@ type AnalyticsRepository interface {
 	UpsertLessonAnalytics(analytics models.UpsertLessonAnalytics) error
 	DeleteLessonAnalytics(analytics models.DeleteLessonAnalytics) error
 	DeleteExamAnalytics(analytics models.DeleteExamAnalytics) error
+	FindExamAnalytics(exam string, userId string) (models.ExamAnalytics, error)
+	FindLessonAnalytics(exam string, lesson string, userId string) (models.LessonAnalytics, error)
+	FindExamResultSeriesByInterval(exam string, userId string, start, end time.Time) ([]models.ResultSeries, error)
+	FindLessonResultSeriesByInterval(exam string, lesson string, userId string, start, end time.Time) ([]models.ResultSeries, error)
 }
 
 type analyticsRepository struct {
@@ -28,6 +33,169 @@ func NewAnalyticsRepository(db *mongo.Database) AnalyticsRepository {
 	return analyticsRepository{
 		collection: collection,
 	}
+}
+
+func (r analyticsRepository) FindExamAnalytics(exam string, userId string) (models.ExamAnalytics, error) {
+	filter := bson.M{
+		"user_id":   userId,
+		"exam_type": exam,
+		"type":      "exam",
+	}
+
+	var analytics models.ExamAnalytics
+	err := r.collection.FindOne(context.Background(), filter).Decode(&analytics)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return models.ExamAnalytics{}, nil
+		}
+		return models.ExamAnalytics{}, err
+	}
+
+	return analytics, nil
+}
+
+func (r analyticsRepository) FindExamResultSeriesByInterval(exam string, userId string, start, end time.Time) ([]models.ResultSeries, error) {
+	pipeline := mongo.Pipeline{
+		{{
+			Key: "$match",
+			Value: bson.M{
+				"user_id":   userId,
+				"exam_type": exam,
+				"type":      "exam",
+			},
+		}},
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id": 0,
+				"result_series": bson.M{
+					"$filter": bson.M{
+						"input": "$result_series",
+						"as":    "item",
+						"cond": bson.M{
+							"$and": bson.A{
+								bson.M{"$gte": bson.A{"$$item.date", start}},
+								bson.M{"$lte": bson.A{"$$item.date", end}},
+							},
+						},
+					},
+				},
+			},
+		}},
+
+		{{
+			Key: "$set",
+			Value: bson.M{
+				"result_series": bson.M{
+					"$sortArray": bson.M{
+						"input":  "$result_series",
+						"sortBy": bson.M{"date": 1},
+					},
+				},
+			},
+		}},
+	}
+
+	var resultSeries struct {
+		ResultSeries []models.ResultSeries `bson:"result_series"`
+	}
+	cursor, err := r.collection.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		return []models.ResultSeries{}, err
+	}
+	defer cursor.Close(context.Background())
+
+	if cursor.Next(context.Background()) {
+		if err := cursor.Decode(&resultSeries); err != nil {
+			return []models.ResultSeries{}, err
+		}
+	} else {
+		resultSeries.ResultSeries = []models.ResultSeries{}
+	}
+
+	return resultSeries.ResultSeries, nil
+}
+func (r analyticsRepository) FindLessonResultSeriesByInterval(exam string, lesson string, userId string, start, end time.Time) ([]models.ResultSeries, error) {
+	pipeline := mongo.Pipeline{
+		{{
+			Key: "$match",
+			Value: bson.M{
+				"user_id":   userId,
+				"exam_type": exam,
+				"type":      "lesson",
+				"lesson":    lesson,
+			},
+		}},
+		{{
+			Key: "$project",
+			Value: bson.M{
+				"_id": 0,
+				"result_series": bson.M{
+					"$filter": bson.M{
+						"input": "$result_series",
+						"as":    "item",
+						"cond": bson.M{
+							"$and": bson.A{
+								bson.M{"$gte": bson.A{"$$item.date", start}},
+								bson.M{"$lte": bson.A{"$$item.date", end}},
+							},
+						},
+					},
+				},
+			},
+		}},
+
+		{{
+			Key: "$set",
+			Value: bson.M{
+				"result_series": bson.M{
+					"$sortArray": bson.M{
+						"input":  "$result_series",
+						"sortBy": bson.M{"date": 1},
+					},
+				},
+			},
+		}},
+	}
+
+	var resultSeries struct {
+		ResultSeries []models.ResultSeries `bson:"result_series"`
+	}
+	cursor, err := r.collection.Aggregate(context.Background(), pipeline)
+	if err != nil {
+		return []models.ResultSeries{}, err
+	}
+	defer cursor.Close(context.Background())
+
+	if cursor.Next(context.Background()) {
+		if err := cursor.Decode(&resultSeries); err != nil {
+			return []models.ResultSeries{}, err
+		}
+	} else {
+		resultSeries.ResultSeries = []models.ResultSeries{}
+	}
+
+	return resultSeries.ResultSeries, nil
+}
+
+func (r analyticsRepository) FindLessonAnalytics(exam string, lesson string, userId string) (models.LessonAnalytics, error) {
+	filter := bson.M{
+		"user_id":   userId,
+		"exam_type": exam,
+		"type":      "lesson",
+		"lesson":    lesson,
+	}
+
+	var analytics models.LessonAnalytics
+	err := r.collection.FindOne(context.Background(), filter).Decode(&analytics)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return models.LessonAnalytics{}, nil
+		}
+		return models.LessonAnalytics{}, err
+	}
+
+	return analytics, nil
 }
 
 func (r analyticsRepository) UpsertExamAnalytics(analytics models.UpsertExamAnalytics) error {
@@ -166,19 +334,22 @@ func (r analyticsRepository) UpsertLessonAnalytics(analytics models.UpsertLesson
 			},
 
 			"average_time": bson.M{
-				"$divide": bson.A{
-					bson.M{
-						"$add": bson.A{
-							bson.M{
-								"$multiply": bson.A{
-									"$average_time",
-									bson.M{"$subtract": bson.A{"$new_exam_count", 1}},
+				"$toInt": bson.M{
+					"$divide": bson.A{
+
+						bson.M{
+							"$add": bson.A{
+								bson.M{
+									"$multiply": bson.A{
+										"$average_time",
+										bson.M{"$subtract": bson.A{"$new_exam_count", 1}},
+									},
 								},
+								analytics.Time,
 							},
-							analytics.Time,
 						},
+						"$new_exam_count",
 					},
-					"$new_exam_count",
 				},
 			},
 		}}},
@@ -344,9 +515,11 @@ func (r analyticsRepository) DeleteLessonAnalytics(analytics models.DeleteLesson
 				"$cond": bson.M{
 					"if": bson.M{"$gt": bson.A{bson.M{"$size": "$time_values"}, 0}},
 					"then": bson.M{
-						"$divide": bson.A{
-							bson.M{"$sum": "$time_values"},
-							bson.M{"$size": "$time_values"},
+						"$toInt": bson.M{
+							"$divide": bson.A{
+								bson.M{"$sum": "$time_values"},
+								bson.M{"$size": "$time_values"},
+							},
 						},
 					},
 					"else": 0,

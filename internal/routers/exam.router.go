@@ -22,15 +22,15 @@ func NewExamRouter(ExamHandler *handlers.ExamHandler, authMiddleware middlewares
 }
 
 func (r *ExamRouter) RegisterRoutes(router *gin.RouterGroup) {
-	analysisRoute := router.Group("/exams")
-	analysisRoute.Use(r.authMiddleware.AccessToken())
+	examsRoute := router.Group("/exams")
+	examsRoute.Use(r.authMiddleware.AccessToken())
 
-	analysisRoute.POST("", r.examHandler.AddExam)
-	analysisRoute.GET("", r.examHandler.GetExams)
-	analysisRoute.DELETE("/:id", r.examHandler.DeleteExam)
+	examsRoute.POST("", r.examHandler.AddExam)
+	examsRoute.GET("", r.examHandler.GetExams)
+	examsRoute.DELETE("/:id", r.examHandler.DeleteExam)
 
-	analysisRoute.GET("/charts/general")
-	analysisRoute.GET("/charts/lesson")
-	analysisRoute.GET("/topic-mistakes")
+	examsRoute.GET("/charts/general")
+	examsRoute.GET("/charts/lesson")
+	examsRoute.GET("/topic-mistakes")
 
 }

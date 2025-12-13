@@ -41,13 +41,16 @@ func main() {
 
 	sessionService := services.NewSessionService(sessionRepo, logger)
 	examService := services.NewExamService(examRepo, analyticsRepo, logger)
+	analyticsService := services.NewAnalyticsService(analyticsRepo, logger)
 	topicMistakesService := services.NewTopicMistakeService(topicMistakesRepo, logger)
 
 	examHandler := handlers.NewExamHandler(examService, topicMistakesService, logger)
 	sessionHandler := handlers.NewSessionHandler(&sessionService, logger)
+	analyticsHandler := handlers.NewAnalyticsHandler(analyticsService, logger)
 
 	examRouter := routers.NewExamRouter(examHandler, *authMiddleware, logger)
 	sessionRouter := routers.NewSessionRouter(sessionHandler, *authMiddleware, logger)
+	analyticsRouter := routers.NewAnalyticsRouter(analyticsHandler, *authMiddleware, logger)
 
 	server := gin.Default()
 
@@ -68,6 +71,7 @@ func main() {
 
 	examRouter.RegisterRoutes(api)
 	sessionRouter.RegisterRoutes(api)
+	analyticsRouter.RegisterRoutes(api)
 
 	err = server.Run(":8080")
 	if err != nil {

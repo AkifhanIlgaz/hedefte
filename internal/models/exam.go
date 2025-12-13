@@ -125,13 +125,13 @@ func (t TopicMistake) Collection() string {
 }
 
 type ExamAnalytics struct {
-	Id            bson.ObjectID  `bson:"_id,omitempty"`
-	UserId        string         `bson:"user_id"`
-	ExamType      string         `bson:"exam_type"`
-	ExamCount     int            `bson:"exam_count"`
-	MaxResult     float64        `bson:"max_result"`
-	AverageResult float64        `bson:"average_result"`
-	ResultSeries  []ResultSeries `bson:"result_series"`
+	Id            bson.ObjectID  `json:"-" bson:"_id,omitempty"`
+	UserId        string         `json:"-" bson:"user_id"`
+	ExamType      string         `json:"-" bson:"exam_type"`
+	ExamCount     int            `json:"examCount" bson:"exam_count"`
+	MaxResult     float64        `json:"maxResult" bson:"max_result"`
+	AverageResult float64        `json:"averageResult" bson:"average_result"`
+	ResultSeries  []ResultSeries `json:"resultSeries" bson:"result_series"`
 }
 
 func (e ExamAnalytics) Collection() string {
@@ -155,15 +155,15 @@ type DeleteExamAnalytics struct {
 }
 
 type LessonAnalytics struct {
-	Id            bson.ObjectID  `bson:"_id,omitempty"`
-	UserId        string         `bson:"user_id"`
-	ExamType      string         `bson:"exam_type"`
-	ExamCount     int            `bson:"exam_count"`
-	MaxResult     float64        `bson:"max_result"`
-	AverageResult float64        `bson:"average_result"`
-	ResultSeries  []ResultSeries `bson:"result_series"`
-	Lesson        string         `bson:"lesson"`
-	AverageTime   int            `bson:"average_time"`
+	Id            bson.ObjectID  `json:"-" bson:"_id,omitempty"`
+	UserId        string         `json:"-" bson:"user_id"`
+	ExamType      string         `json:"-" bson:"exam_type"`
+	Lesson        string         `json:"-" bson:"lesson"`
+	ExamCount     int            `json:"examCount" bson:"exam_count"`
+	MaxResult     float64        `json:"maxResult" bson:"max_result"`
+	AverageResult float64        `json:"averageResult" bson:"average_result"`
+	ResultSeries  []ResultSeries `json:"resultSeries" bson:"result_series"`
+	AverageTime   int            `json:"averageTime" bson:"average_time"`
 }
 
 type UpsertLessonAnalytics struct {
@@ -187,9 +187,9 @@ type DeleteLessonAnalytics struct {
 }
 
 type ResultSeries struct {
-	ExamId bson.ObjectID `bson:"exam_id"`
-	Date   time.Time     `bson:"date"`
-	Name   string        `bson:"name"`
-	Result float64       `bson:"result"`
-	Time   int           `bson:"time,omitempty"`
+	ExamId bson.ObjectID `json:"-" bson:"exam_id"`
+	Date   time.Time     `json:"date" bson:"date"`
+	Name   string        `json:"name" bson:"name"`
+	Result float64       `json:"result" bson:"result"`
+	Time   int           `json:"time,omitempty" bson:"time,omitempty"`
 }
